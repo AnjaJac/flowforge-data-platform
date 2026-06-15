@@ -24,3 +24,7 @@ Source → Raw → Staging → Core → Analytics
 - PostgreSQL
 - Pytest
 - GitHub Actions
+
+## Status
+
+Project setup in progress
