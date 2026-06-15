@@ -1,0 +1,11 @@
+polars>=1.30.0
+pyarrow>=20.0.0
+
+pytest>=8.0.0
+pytest-cov>=6.0.0
+
+ruff>=0.11.0
+black>=25.0.0
+
+pyyaml>=6.0
+python-dotenv>=1.0.0
