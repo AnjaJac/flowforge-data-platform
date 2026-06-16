@@ -36,3 +36,7 @@ data/analytics/
 dist/
 build/
 *.egg-info/
+
+*.parquet
+*.csv
+*.json
