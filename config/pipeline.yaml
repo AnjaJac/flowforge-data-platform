@@ -1,0 +1,3 @@
+pipeline:
+  name: flowforge-data-platform
+  version: 1.0
