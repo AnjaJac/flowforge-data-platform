@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: flowforge-postgres
+
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - flowforge-network
+volumes:
+  postgres_data: 
+networks:
+  flowforge-network:
+    name: flowforge-network
+    driver: bridge
