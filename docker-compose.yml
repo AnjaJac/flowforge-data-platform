@@ -56,7 +56,21 @@ services:
     networks:
       - flowforge-network
     command: airflow scheduler
-  
+  airflow-dag-processor:
+    image: flowforge-airflow:dev
+    container_name: flowforge-dag-processor
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@flowforge-postgres:5432/airflow
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./airflow/logs:/opt/airflow/logs
+    networks:
+      - flowforge-network
+    command: airflow dag-processor
 volumes:
   postgres_data: 
 networks:
