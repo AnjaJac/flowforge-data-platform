@@ -31,6 +31,7 @@ services:
     image: flowforge-airflow:dev
     container_name: flowforge-webserver
     environment:
+      PYTHONPATH: /opt/airflow
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@flowforge-postgres:5432/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__PARALLELISM: 8
@@ -44,6 +45,8 @@ services:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/plugins:/opt/airflow/plugins
       - ./airflow/logs:/opt/airflow/logs
+      - ./src:/opt/airflow/src
+      - ./data:/opt/airflow/data
     networks:
       - flowforge-network
     command: airflow api-server
@@ -51,6 +54,7 @@ services:
     image: flowforge-airflow:dev
     container_name: flowforge-scheduler
     environment:
+      PYTHONPATH: /opt/airflow
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@flowforge-postgres:5432/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__PARALLELISM: 8
@@ -62,6 +66,8 @@ services:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/plugins:/opt/airflow/plugins
       - ./airflow/logs:/opt/airflow/logs
+      - ./src:/opt/airflow/src
+      - ./data:/opt/airflow/data
     networks:
       - flowforge-network
     command: airflow scheduler
@@ -69,6 +75,7 @@ services:
     image: flowforge-airflow:dev
     container_name: flowforge-dag-processor
     environment:
+      PYTHONPATH: /opt/airflow
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@flowforge-postgres:5432/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__PARALLELISM: 8
@@ -80,6 +87,8 @@ services:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/plugins:/opt/airflow/plugins
       - ./airflow/logs:/opt/airflow/logs
+      - ./src:/opt/airflow/src
+      - ./data:/opt/airflow/data
     networks:
       - flowforge-network
     command: airflow dag-processor
