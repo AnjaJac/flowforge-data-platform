@@ -98,3 +98,27 @@ deduplication:
     reviews: null
     payments: null
     order_items: null
+
+foreign_keys:
+  orders:
+    - column: customer_id
+      references_entity: customers
+      references_column: customer_id
+  order_items:
+    - column: order_id
+      references_entity: orders
+      references_column: order_id
+    - column: product_id
+      references_entity: products
+      references_column: product_id
+    - column: seller_id
+      references_entity: sellers
+      references_column: seller_id
+  payments:
+    - column: order_id
+      references_entity: orders
+      references_column: order_id
+  reviews:
+    - column: order_id
+      references_entity: orders
+      references_column: order_id

@@ -10,6 +10,7 @@ import yaml
 
 from src.core.dedup import dedup_entity
 from src.staging.quality_check import load_quality_config
+from src.core.relationship_validation import run_relationship_validation
 
 STAGING_DIR = "/opt/airflow/data/staging"
 CORE_DIR = "/opt/airflow/data/core"
@@ -34,6 +35,16 @@ def run_dedup_for_entity(entity_name: str):
     print(f"[{entity_name}] rows removed during deduplication: {removed_count}")
 
     deduped_df.write_parquet(f"{CORE_DIR}/core_{entity_name}.parquet")
+
+def run_relationship_validation_task():
+    reports = run_relationship_validation(
+        core_dir=CORE_DIR,
+        config_path=VALIDATION_CONFIG_PATH,
+    )
+    for entity_name, entity_report in reports.items():
+        for column, result in entity_report.items():
+            print(f"[{entity_name}.{column}] removed: {result['removed_count']}")
+    return reports
 
 
 with DAG(
@@ -60,8 +71,13 @@ with DAG(
         )
         dedup_tasks.append(task)
 
+    relationship_validation_task = PythonOperator(
+        task_id="relationship_validation_task",
+        python_callable=run_relationship_validation_task,
+    )
+
     publish_metadata = EmptyOperator(
         task_id="publish_metadata"
     )
 
-    wait_for_staging >> dedup_tasks >> publish_metadata
+    wait_for_staging >> dedup_tasks >> relationship_validation_task >> publish_metadata
