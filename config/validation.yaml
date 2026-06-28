@@ -1,2 +1,62 @@
 validation:
   enabled: true
+
+schemas:
+  customers:
+    customer_id: String
+    customer_unique_id: String
+    customer_zip_code_prefix: Int64
+    customer_city: String
+    customer_state: String
+
+  orders:
+    order_id: String
+    customer_id: String
+    order_status: String
+    order_purchase_timestamp: String
+    order_approved_at: String
+    order_delivered_carrier_date: String
+    order_delivered_customer_date: String
+    order_estimated_delivery_date: String
+
+  order_items:
+    order_id: String
+    order_item_id: Int64
+    product_id: String
+    seller_id: String
+    shipping_limit_date: String
+    price: Float64
+    freight_value: Float64
+  
+  products:
+    product_id: String
+    product_category_name: String
+    product_name_lenght: Int64
+    product_description_lenght: Int64
+    product_photos_qty: Int64
+    product_weight_g: Int64
+    product_length_cm: Int64
+    product_height_cm: Int64
+    product_width_cm: Int64
+
+  sellers:
+    seller_id: String
+    seller_zip_code_prefix: Int64
+    seller_city: String
+    seller_state: String
+
+  payments:
+    order_id: String
+    payment_sequential: Int64
+    payment_type: String
+    payment_installments: Int64
+    payment_value: Float64
+
+  reviews:
+    review_id: String
+    order_id: String
+    review_score: Int64
+    review_comment_title: String
+    review_comment_message: String
+    review_creation_date: String
+    review_answer_timestamp: String

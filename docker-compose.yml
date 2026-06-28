@@ -4,9 +4,9 @@ services:
     container_name: flowforge-postgres
 
     environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
 
@@ -18,19 +18,20 @@ services:
     image: flowforge-airflow:dev
     container_name: flowforge-init
     environment:
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@flowforge-postgres:5432/airflow
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@flowforge-postgres:5432/${POSTGRES_DB}
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__PARALLELISM: 8
       AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG: 1
-      AIRFLOW__API__SECRET_KEY: "7v7dg-LqvjFw6MqTPwoCWbV_eqAVCBh-RCPNhs_lIlE"
+      AIRFLOW__API__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
       AIRFLOW__CORE__AUTH_MANAGER: airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
       AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: admin:admin
       AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: /opt/airflow/simple_auth_manager_passwords.json
-      AIRFLOW__API_AUTH__JWT_SECRET: "UZkiyrnfTm1HQDOJ560dCtlKgEJz-AKInCWiydCi-x4"
+      AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW_JWT_SECRET}
     depends_on:
       - postgres
     volumes:
       - ./airflow/config/simple_auth_manager_passwords.json:/opt/airflow/simple_auth_manager_passwords.json
+      - ./config:/opt/airflow/config
     networks:
       - flowforge-network
     command: airflow db migrate
@@ -39,16 +40,16 @@ services:
     container_name: flowforge-webserver
     environment:
       PYTHONPATH: /opt/airflow
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@flowforge-postgres:5432/airflow
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@flowforge-postgres:5432/${POSTGRES_DB}
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__PARALLELISM: 8
       AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG: 1
       AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://flowforge-webserver:8080/execution/
-      AIRFLOW__API__SECRET_KEY: "7v7dg-LqvjFw6MqTPwoCWbV_eqAVCBh-RCPNhs_lIlE"
+      AIRFLOW__API__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
       AIRFLOW__CORE__AUTH_MANAGER: airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
       AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: admin:admin
       AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: /opt/airflow/simple_auth_manager_passwords.json
-      AIRFLOW__API_AUTH__JWT_SECRET: "UZkiyrnfTm1HQDOJ560dCtlKgEJz-AKInCWiydCi-x4"
+      AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW_JWT_SECRET}
     depends_on:
       airflow-init:
         condition: service_completed_successfully
@@ -60,6 +61,7 @@ services:
       - ./airflow/logs:/opt/airflow/logs
       - ./src:/opt/airflow/src
       - ./data:/opt/airflow/data
+      - ./config:/opt/airflow/config
       - ./airflow/config/simple_auth_manager_passwords.json:/opt/airflow/simple_auth_manager_passwords.json
     networks:
       - flowforge-network
@@ -69,16 +71,16 @@ services:
     container_name: flowforge-scheduler
     environment:
       PYTHONPATH: /opt/airflow
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@flowforge-postgres:5432/airflow
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@flowforge-postgres:5432/${POSTGRES_DB}
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__PARALLELISM: 8
       AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG: 1
       AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://flowforge-webserver:8080/execution/
-      AIRFLOW__API__SECRET_KEY: "7v7dg-LqvjFw6MqTPwoCWbV_eqAVCBh-RCPNhs_lIlE"
+      AIRFLOW__API__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
       AIRFLOW__CORE__AUTH_MANAGER: airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
       AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: admin:admin
       AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: /opt/airflow/simple_auth_manager_passwords.json
-      AIRFLOW__API_AUTH__JWT_SECRET: "UZkiyrnfTm1HQDOJ560dCtlKgEJz-AKInCWiydCi-x4"
+      AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW_JWT_SECRET}
     depends_on:
       airflow-init:
         condition: service_completed_successfully
@@ -88,6 +90,7 @@ services:
       - ./airflow/logs:/opt/airflow/logs
       - ./src:/opt/airflow/src
       - ./data:/opt/airflow/data
+      - ./config:/opt/airflow/config
       - ./airflow/config/simple_auth_manager_passwords.json:/opt/airflow/simple_auth_manager_passwords.json
     networks:
       - flowforge-network
@@ -97,16 +100,16 @@ services:
     container_name: flowforge-dag-processor
     environment:
       PYTHONPATH: /opt/airflow
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@flowforge-postgres:5432/airflow
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@flowforge-postgres:5432/${POSTGRES_DB}
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__PARALLELISM: 8
       AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG: 1
       AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://flowforge-webserver:8080/execution/
-      AIRFLOW__API__SECRET_KEY: "7v7dg-LqvjFw6MqTPwoCWbV_eqAVCBh-RCPNhs_lIlE"
+      AIRFLOW__API__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
       AIRFLOW__CORE__AUTH_MANAGER: airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
       AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: admin:admin
       AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: /opt/airflow/simple_auth_manager_passwords.json
-      AIRFLOW__API_AUTH__JWT_SECRET: "UZkiyrnfTm1HQDOJ560dCtlKgEJz-AKInCWiydCi-x4"
+      AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW_JWT_SECRET}
     depends_on:
       airflow-init:
         condition: service_completed_successfully
@@ -116,6 +119,7 @@ services:
       - ./airflow/logs:/opt/airflow/logs
       - ./src:/opt/airflow/src
       - ./data:/opt/airflow/data
+      - ./config:/opt/airflow/config
       - ./airflow/config/simple_auth_manager_passwords.json:/opt/airflow/simple_auth_manager_passwords.json
     networks:
       - flowforge-network
