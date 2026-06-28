@@ -88,3 +88,13 @@ quality:
       order_id: 0.0
     order_items:
       order_id: 0.0
+
+deduplication:
+  tiebreaker_columns:
+    customers: null
+    orders: null
+    products: null
+    sellers: null
+    reviews: null
+    payments: null
+    order_items: null
