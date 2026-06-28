@@ -60,3 +60,31 @@ schemas:
     review_comment_message: String
     review_creation_date: String
     review_answer_timestamp: String
+
+quality:
+  primary_keys:
+    customers: [customer_id]
+    orders: [order_id]
+    products: [product_id]
+    sellers: [seller_id]
+    reviews: [review_id, order_id]
+    payments: [order_id, payment_sequential]
+    order_items: [order_id, order_item_id]
+
+  null_thresholds:
+    customers:
+      customer_id: 0.0
+    orders:
+      order_id: 0.0
+      customer_id: 0.0
+    products:
+      product_category_name: 0.05
+    sellers:
+      seller_id: 0.0
+    reviews:
+      review_id: 0.0
+      review_comment_message: 0.95
+    payments:
+      order_id: 0.0
+    order_items:
+      order_id: 0.0
