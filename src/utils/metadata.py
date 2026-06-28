@@ -51,3 +51,4 @@ def generate_metadata(
         "entities": entities,
         "pipeline_meta": {},
     }
+
