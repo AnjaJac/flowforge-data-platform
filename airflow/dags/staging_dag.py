@@ -12,6 +12,8 @@ from src.staging.payments import clean_payments
 from src.staging.products import clean_products
 from src.staging.reviews import clean_reviews
 from src.staging.orders import clean_orders, clean_order_items
+from src.staging.quality_check import run_quality_check
+from src.staging.publish_metadata import publish_metadata as write_staging_metadata
 
 RAW_DIR = "/opt/airflow/data/raw"
 VALIDATION_CONFIG_PATH = "/opt/airflow/config/validation.yaml"
@@ -62,6 +64,24 @@ def run_order_items_processing():
 def run_schema_validation():
     validate_all_schemas(raw_dir=RAW_DIR, config_path=VALIDATION_CONFIG_PATH)
 
+def run_quality_check_task(**context):
+    results = run_quality_check(
+        staging_dir=STAGING_DIR,
+        config_path=VALIDATION_CONFIG_PATH,
+    )
+    return results
+
+def run_publish_metadata_task(**context):
+    print('Available context keys:', list(context.keys()))
+    quality_results = context["ti"].xcom_pull(task_ids="quality_check_task")
+    write_staging_metadata(
+        quality_results=quality_results,
+        dag_id=context["dag"].dag_id,
+        run_id=context["run_id"],
+        execution_date=str(context.get("logical_date", context.get("ds", "unknown"))),
+        output_directory=STAGING_DIR,
+    )
+
 
 with DAG(
     dag_id="staging_dag",
@@ -83,8 +103,14 @@ with DAG(
         python_callable=run_schema_validation,
     )
 
-    publish_metadata = EmptyOperator(
-        task_id="publish_metadata"
+    quality_check_task = PythonOperator(
+        task_id="quality_check_task",
+        python_callable=run_quality_check_task,
+    )
+
+    publish_metadata = PythonOperator(
+        task_id="publish_metadata",
+        python_callable=run_publish_metadata_task,
     )
 
     with TaskGroup("customer_processing") as customer_processing:
@@ -122,4 +148,4 @@ with DAG(
             python_callable=run_order_items_processing,
         )
     
-    start >> schema_validation_task >> customer_processing >> seller_processing >> payment_processing >> product_processing >> review_processing >> order_processing >> publish_metadata
+    start >> schema_validation_task >> customer_processing >> seller_processing >> payment_processing >> product_processing >> review_processing >> order_processing >> quality_check_task >> publish_metadata
