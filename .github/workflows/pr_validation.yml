@@ -43,4 +43,4 @@ jobs:
             -v ${{ github.workspace }}/config:/opt/airflow/config \
             -e PYTHONPATH=/opt/airflow \
             flowforge-airflow:ci \
-            airflow dags list-import-errors
+            bash -c "airflow db migrate && airflow dags list-import-errors"
