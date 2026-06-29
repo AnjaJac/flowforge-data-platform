@@ -83,6 +83,10 @@ jobs:
       - name: Show task states for debugging
         run: |
           docker exec flowforge-scheduler airflow dags list-runs analytics_dag
+      
+      - name: Show raw analytics trigger output for debugging
+        run: cat /tmp/analytics_trigger_output.txt
+      
       - name: Show analytics_dag task states for debugging
         run: |
           RUN_ID=$(grep -oP 'manual__[0-9T:.+-]+_[A-Za-z0-9]+' /tmp/analytics_trigger_output.txt | head -1)
