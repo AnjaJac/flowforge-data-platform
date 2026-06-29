@@ -94,6 +94,10 @@ jobs:
         run: |
           LOGICAL_DATE=$(cat /tmp/logical_date.txt)
           docker exec flowforge-scheduler airflow tasks states-for-dag-run analytics_dag "$LOGICAL_DATE"
+          
+      - name: Show scheduler logs around wait_for_core failure
+        run: docker logs flowforge-scheduler --tail 100
+
 
       - name: Verify final analytics outputs exist
         run: |
