@@ -63,6 +63,12 @@ jobs:
       - name: Show dag-processor logs for debugging
         run: docker logs flowforge-dag-processor --tail 50
 
+      - name: Show webserver status and logs for debugging
+        run: |
+          docker compose ps
+          echo "--- webserver logs ---"
+          docker logs flowforge-webserver --tail 50
+          
       - name: Trigger full pipeline (staging -> core -> analytics)
         run: |
           docker exec flowforge-scheduler airflow dags unpause staging_dag
@@ -94,7 +100,7 @@ jobs:
         run: |
           LOGICAL_DATE=$(cat /tmp/logical_date.txt)
           docker exec flowforge-scheduler airflow tasks states-for-dag-run analytics_dag "$LOGICAL_DATE"
-          
+
       - name: Show scheduler logs around wait_for_core failure
         run: docker logs flowforge-scheduler --tail 100
 
