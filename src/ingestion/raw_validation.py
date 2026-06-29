@@ -9,8 +9,9 @@ EXPECTED_RAW_FILES = [
     "products.parquet",
     "sellers.parquet",
     "payments.parquet",
-    "reviews.parquet"
+    "reviews.parquet",
 ]
+
 
 def validate_raw_layer(raw_directory: str) -> None:
     """
@@ -37,13 +38,8 @@ def validate_raw_layer(raw_directory: str) -> None:
         parquet_file = raw_path / filename
 
         if not parquet_file.exists():
-            raise FileNotFoundError(
-                f"Missing raw dataset: {filename}"
-            )
+            raise FileNotFoundError(f"Missing raw dataset: {filename}")
         df = pl.read_parquet(parquet_file)
 
         if df.height == 0:
-            raise ValueError(
-                f"Raw dataset is empty: {filename}"
-            )
-        
+            raise ValueError(f"Raw dataset is empty: {filename}")

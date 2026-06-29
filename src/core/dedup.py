@@ -69,9 +69,8 @@ def dedup_entity(
             f"deduplication.tiebreaker_columns.{entity_name}."
         )
 
-    deduped = (
-        df.sort(tiebreaker_column, descending=True)
-        .unique(subset=primary_key_columns, keep="first")
+    deduped = df.sort(tiebreaker_column, descending=True).unique(
+        subset=primary_key_columns, keep="first"
     )
 
     rows_removed = total_rows - deduped.height

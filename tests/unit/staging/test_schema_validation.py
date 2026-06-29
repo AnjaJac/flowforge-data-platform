@@ -27,10 +27,10 @@ from src.staging.schema_validation import (
     validate_all_schemas,
 )
 
-
 # ---------------------------------------------------------------------------
 # resolve_polars_dtype
 # ---------------------------------------------------------------------------
+
 
 def test_resolve_polars_dtype_known_types():
     """Each type name used in validation.yaml must resolve to the matching
@@ -53,6 +53,7 @@ def test_resolve_polars_dtype_unknown_type_raises():
 # ---------------------------------------------------------------------------
 # load_expected_schemas
 # ---------------------------------------------------------------------------
+
 
 def test_load_expected_schemas_parses_real_yaml_structure(tmp_path):
     """Parses a real validation.yaml-shaped file, including the unrelated
@@ -103,6 +104,7 @@ def test_load_expected_schemas_missing_schemas_key_raises(tmp_path):
 # ---------------------------------------------------------------------------
 # validate_entity_schema
 # ---------------------------------------------------------------------------
+
 
 def _write_parquet(path, data: dict) -> None:
     """Helper: write a tiny real Parquet file from a dict of column data."""
@@ -197,6 +199,7 @@ def test_validate_entity_schema_missing_file_raises(tmp_path):
 # ---------------------------------------------------------------------------
 # validate_all_schemas
 # ---------------------------------------------------------------------------
+
 
 def test_validate_all_schemas_passes_when_every_entity_matches(tmp_path):
     """All entities matching their expected schema -> the whole gate

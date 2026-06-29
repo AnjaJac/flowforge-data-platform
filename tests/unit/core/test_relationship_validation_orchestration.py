@@ -9,15 +9,14 @@ and writing core parquets, and confirming orphan removal is persisted.
 """
 
 import polars as pl
-import pytest
 import yaml
 
 from src.core.relationship_validation import load_fk_config, run_relationship_validation
 
-
 # ---------------------------------------------------------------------------
 # load_fk_config
 # ---------------------------------------------------------------------------
+
 
 def test_load_fk_config_returns_foreign_keys_section(tmp_path):
     config = {
@@ -56,6 +55,7 @@ def test_load_fk_config_returns_empty_dict_when_key_absent(tmp_path):
 # run_relationship_validation
 # ---------------------------------------------------------------------------
 
+
 def test_run_relationship_validation_filters_orphans_and_overwrites_file(tmp_path):
     """run_relationship_validation must remove orphaned rows from the
     entity's parquet on disk (SCD Type 1 in-place overwrite), not just
@@ -65,10 +65,12 @@ def test_run_relationship_validation_filters_orphans_and_overwrites_file(tmp_pat
     core_dir.mkdir()
 
     customers = pl.DataFrame({"customer_id": ["c1", "c2"]})
-    orders = pl.DataFrame({
-        "order_id": ["o1", "o2", "o3"],
-        "customer_id": ["c1", "c2", "c_orphan"],
-    })
+    orders = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2", "o3"],
+            "customer_id": ["c1", "c2", "c_orphan"],
+        }
+    )
     customers.write_parquet(core_dir / "core_customers.parquet")
     orders.write_parquet(core_dir / "core_orders.parquet")
 
@@ -89,7 +91,9 @@ def test_run_relationship_validation_filters_orphans_and_overwrites_file(tmp_pat
     report = run_relationship_validation(core_dir, config_path)
 
     orders_on_disk = pl.read_parquet(core_dir / "core_orders.parquet")
-    assert orders_on_disk.height == 2, "orphaned row must be removed from the file on disk"
+    assert (
+        orders_on_disk.height == 2
+    ), "orphaned row must be removed from the file on disk"
     assert "c_orphan" not in orders_on_disk["customer_id"].to_list()
 
     assert report["orders"]["customer_id"]["removed_count"] == 1

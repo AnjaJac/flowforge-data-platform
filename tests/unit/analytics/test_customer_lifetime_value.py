@@ -13,14 +13,18 @@ from src.analytics.customer_lifetime_value import generate_customer_lifetime_val
 
 
 def test_generate_clv_aggregates_spend_per_customer():
-    orders = pl.DataFrame({
-        "order_id": ["o1", "o2"],
-        "customer_id": ["c1", "c2"],
-    })
-    payments = pl.DataFrame({
-        "order_id": ["o1", "o2"],
-        "payment_value": [100.0, 50.0],
-    })
+    orders = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2"],
+            "customer_id": ["c1", "c2"],
+        }
+    )
+    payments = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2"],
+            "payment_value": [100.0, 50.0],
+        }
+    )
 
     result = generate_customer_lifetime_value(orders, payments)
 
@@ -33,14 +37,18 @@ def test_generate_clv_aggregates_spend_per_customer():
 def test_generate_clv_multi_order_customer_sums_correctly():
     """A customer with two orders must have clv = sum of both payments
     and order_count = 2, not two separate rows."""
-    orders = pl.DataFrame({
-        "order_id": ["o1", "o2"],
-        "customer_id": ["c1", "c1"],
-    })
-    payments = pl.DataFrame({
-        "order_id": ["o1", "o2"],
-        "payment_value": [60.0, 40.0],
-    })
+    orders = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2"],
+            "customer_id": ["c1", "c1"],
+        }
+    )
+    payments = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2"],
+            "payment_value": [60.0, 40.0],
+        }
+    )
 
     result = generate_customer_lifetime_value(orders, payments)
 
@@ -51,14 +59,18 @@ def test_generate_clv_multi_order_customer_sums_correctly():
 
 
 def test_generate_clv_sorted_by_clv_descending():
-    orders = pl.DataFrame({
-        "order_id": ["o1", "o2", "o3"],
-        "customer_id": ["c1", "c2", "c3"],
-    })
-    payments = pl.DataFrame({
-        "order_id": ["o1", "o2", "o3"],
-        "payment_value": [30.0, 200.0, 75.0],
-    })
+    orders = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2", "o3"],
+            "customer_id": ["c1", "c2", "c3"],
+        }
+    )
+    payments = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2", "o3"],
+            "payment_value": [30.0, 200.0, 75.0],
+        }
+    )
 
     result = generate_customer_lifetime_value(orders, payments)
 

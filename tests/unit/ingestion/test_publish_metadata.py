@@ -10,7 +10,6 @@ by dataset stem (e.g. "customers"), not by full path.
 
 import json
 
-import pytest
 
 from src.ingestion.publish_metadata import publish_metadata
 
@@ -30,12 +29,14 @@ def test_publish_metadata_writes_json_to_output_directory(tmp_path):
     out_dir = tmp_path / "raw"
     out_dir.mkdir(parents=True)
 
-    returned_path = publish_metadata(results, "dag1", "run1", "2024-01-01", str(out_dir))
+    returned_path = publish_metadata(
+        results, "dag1", "run1", "2024-01-01", str(out_dir)
+    )
 
     expected = out_dir / "metadata.json"
-    assert expected.exists(), (
-        "metadata.json must be written inside tmp_path, not a system default path"
-    )
+    assert (
+        expected.exists()
+    ), "metadata.json must be written inside tmp_path, not a system default path"
     assert returned_path == str(expected)
 
 

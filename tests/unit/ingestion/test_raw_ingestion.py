@@ -32,12 +32,12 @@ def test_ingest_file_no_schema_dataset_writes_parquet_and_returns_stats(tmp_path
     result = ingest_file(str(csv_path))
 
     expected_output = tmp_path / "raw" / "customers.parquet"
-    assert expected_output.exists(), (
-        "output parquet must be written to tmp_path/raw/, not a system default path"
-    )
-    assert result["output_file_path"] == str(expected_output), (
-        "returned output_file_path must match the actual tmp_path location"
-    )
+    assert (
+        expected_output.exists()
+    ), "output parquet must be written to tmp_path/raw/, not a system default path"
+    assert result["output_file_path"] == str(
+        expected_output
+    ), "returned output_file_path must match the actual tmp_path location"
     assert result["source_file_path"] == str(csv_path)
     assert result["source_row_count"] == 2
     assert result["output_row_count"] == 2
@@ -59,9 +59,9 @@ def test_ingest_file_applies_typed_schema_for_payments(tmp_path):
     result = ingest_file(str(csv_path))
 
     expected_output = tmp_path / "raw" / "payments.parquet"
-    assert expected_output.exists(), (
-        "payments parquet must be written to tmp_path/raw/, not a system default path"
-    )
+    assert (
+        expected_output.exists()
+    ), "payments parquet must be written to tmp_path/raw/, not a system default path"
     assert result["output_file_path"] == str(expected_output)
     parquet_df = pl.read_parquet(expected_output)
     assert parquet_df["payment_value"].dtype == pl.Float64

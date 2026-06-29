@@ -7,11 +7,11 @@ from src.utils.metadata import (
 
 
 def publish_metadata(
-        execution_summary: dict,
-        dag_id: str,
-        run_id: str,
-        execution_date: str,
-        output_directory: str,
+    execution_summary: dict,
+    dag_id: str,
+    run_id: str,
+    execution_date: str,
+    output_directory: str,
 ) -> str:
     """
     Generate and publish execution metadata for the Core layer.

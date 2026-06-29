@@ -34,23 +34,17 @@ def generate_sales_performance(
 
     payments_with_month = payments_df.join(order_to_month, on="order_id", how="inner")
 
-    monthly = (
-        payments_with_month
-        .group_by("month")
-        .agg([
+    monthly = payments_with_month.group_by("month").agg(
+        [
             pl.col("payment_value").sum().alias("gmv"),
-        ])
+        ]
     )
 
-    order_counts = (
-        orders_with_month
-        .group_by("month")
-        .agg(pl.col("order_id").n_unique().alias("order_count"))
+    order_counts = orders_with_month.group_by("month").agg(
+        pl.col("order_id").n_unique().alias("order_count")
     )
 
     result = monthly.join(order_counts, on="month", how="inner")
-    result = result.with_columns(
-        (pl.col("gmv") / pl.col("order_count")).alias("aov")
-    )
+    result = result.with_columns((pl.col("gmv") / pl.col("order_count")).alias("aov"))
 
     return result.sort("month")

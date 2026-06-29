@@ -1,5 +1,5 @@
 """
-Raw Schema Conformance Validation Gate 
+Raw Schema Conformance Validation Gate
 
 This module validates that raw Parquet files match the structural schema
 expected by the Staging layer, BEFORE any transformation logic runs.
@@ -67,9 +67,7 @@ def load_expected_schemas(config_path: str | Path) -> dict[str, dict[str, str]]:
         config = yaml.safe_load(f)
 
     if "schemas" not in config:
-        raise KeyError(
-            f"'{config_path}' does not contain a top-level 'schemas' key"
-        )
+        raise KeyError(f"'{config_path}' does not contain a top-level 'schemas' key")
 
     return config["schemas"]
 
@@ -119,9 +117,7 @@ def validate_entity_schema(
     """
     raw_path = Path(raw_path)
     if not raw_path.exists():
-        raise SchemaValidationError(
-            f"[{entity_name}] raw file not found: {raw_path}"
-        )
+        raise SchemaValidationError(f"[{entity_name}] raw file not found: {raw_path}")
 
     actual_schema = pl.read_parquet_schema(raw_path)
 

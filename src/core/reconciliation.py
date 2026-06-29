@@ -86,16 +86,15 @@ def reconcile_payments(
           order_items - order_id, actual_total only.
     """
     expected = (
-        order_items_df
-        .with_columns((pl.col("price") + pl.col("freight_value")).alias("item_total"))
+        order_items_df.with_columns(
+            (pl.col("price") + pl.col("freight_value")).alias("item_total")
+        )
         .group_by("order_id")
         .agg(pl.col("item_total").sum().alias("expected_total"))
     )
 
-    actual = (
-        payments_df
-        .group_by("order_id")
-        .agg(pl.col("payment_value").sum().alias("actual_total"))
+    actual = payments_df.group_by("order_id").agg(
+        pl.col("payment_value").sum().alias("actual_total")
     )
 
     orders_with_items = set(expected["order_id"].to_list())
@@ -135,11 +134,13 @@ def build_quarantine_records(
         pl.lit("exceeded_tolerance").alias("reason")
     )
 
-    excluded_with_reason = excluded.with_columns([
-        pl.lit(None, dtype=pl.Float64).alias("expected_total"),
-        pl.lit(None, dtype=pl.Float64).alias("difference"),
-        pl.lit("no_order_items").alias("reason"),
-    ]).select(["order_id", "expected_total", "actual_total", "difference", "reason"])
+    excluded_with_reason = excluded.with_columns(
+        [
+            pl.lit(None, dtype=pl.Float64).alias("expected_total"),
+            pl.lit(None, dtype=pl.Float64).alias("difference"),
+            pl.lit("no_order_items").alias("reason"),
+        ]
+    ).select(["order_id", "expected_total", "actual_total", "difference", "reason"])
 
     failed_aligned = failed.select(
         ["order_id", "expected_total", "actual_total", "difference", "reason"]

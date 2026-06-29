@@ -21,10 +21,10 @@ from src.analytics.validation import (
     run_analytics_validation,
 )
 
-
 # ---------------------------------------------------------------------------
 # validate_gmv_reconciliation
 # ---------------------------------------------------------------------------
+
 
 def test_validate_gmv_reconciliation_passes_within_tolerance():
     sales = pl.DataFrame({"gmv": [100.0, 50.0]})
@@ -51,6 +51,7 @@ def test_validate_gmv_reconciliation_raises_when_difference_exceeds_tolerance():
 # ---------------------------------------------------------------------------
 # validate_no_nulls_in_key_columns
 # ---------------------------------------------------------------------------
+
 
 def test_validate_no_nulls_passes_when_no_nulls_present():
     sales = pl.DataFrame({"gmv": [100.0, 200.0], "aov": [50.0, 100.0]})
@@ -83,6 +84,7 @@ def test_validate_no_nulls_raises_on_null_clv():
 # run_analytics_validation
 # ---------------------------------------------------------------------------
 
+
 def test_run_analytics_validation_passes_end_to_end(tmp_path):
     """Both GMV reconciliation and null checks must pass for returned
     dict to have passed=True. Files must be in tmp_path sub-directories
@@ -92,15 +94,20 @@ def test_run_analytics_validation_passes_end_to_end(tmp_path):
     core_dir = tmp_path / "core"
     core_dir.mkdir()
 
-    pl.DataFrame({"month": ["2024-01"], "gmv": [150.0], "aov": [75.0], "order_count": [2]}).write_parquet(
-        analytics_dir / "sales_performance.parquet"
-    )
-    pl.DataFrame({"customer_id": ["c1"], "clv": [150.0], "order_count": [2], "avg_order_value": [75.0]}).write_parquet(
-        analytics_dir / "customer_lifetime_value.parquet"
-    )
-    pl.DataFrame({"order_id": ["o1", "o2"], "payment_value": [80.0, 70.0]}).write_parquet(
-        core_dir / "core_payments.parquet"
-    )
+    pl.DataFrame(
+        {"month": ["2024-01"], "gmv": [150.0], "aov": [75.0], "order_count": [2]}
+    ).write_parquet(analytics_dir / "sales_performance.parquet")
+    pl.DataFrame(
+        {
+            "customer_id": ["c1"],
+            "clv": [150.0],
+            "order_count": [2],
+            "avg_order_value": [75.0],
+        }
+    ).write_parquet(analytics_dir / "customer_lifetime_value.parquet")
+    pl.DataFrame(
+        {"order_id": ["o1", "o2"], "payment_value": [80.0, 70.0]}
+    ).write_parquet(core_dir / "core_payments.parquet")
 
     result = run_analytics_validation(str(analytics_dir), str(core_dir))
 

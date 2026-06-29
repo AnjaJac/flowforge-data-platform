@@ -29,24 +29,21 @@ def generate_customer_retention(orders_df: pl.DataFrame) -> pl.DataFrame:
         pl.col("order_purchase_timestamp").dt.strftime("%Y-%m").alias("order_month")
     )
 
-    first_purchase = (
-        orders_with_month
-        .group_by("customer_id")
-        .agg(pl.col("order_month").min().alias("cohort_month"))
+    first_purchase = orders_with_month.group_by("customer_id").agg(
+        pl.col("order_month").min().alias("cohort_month")
     )
 
-    cohort_sizes = (
-        first_purchase
-        .group_by("cohort_month")
-        .agg(pl.col("customer_id").n_unique().alias("cohort_size"))
+    cohort_sizes = first_purchase.group_by("cohort_month").agg(
+        pl.col("customer_id").n_unique().alias("cohort_size")
     )
 
     all_months = sorted(orders_with_month["order_month"].unique().to_list())
 
-    customer_activity = orders_with_month.join(first_purchase, on="customer_id", how="left")
+    customer_activity = orders_with_month.join(
+        first_purchase, on="customer_id", how="left"
+    )
     activity_counts = (
-        customer_activity
-        .group_by(["cohort_month", "order_month"])
+        customer_activity.group_by(["cohort_month", "order_month"])
         .agg(pl.col("customer_id").n_unique().alias("active_customers"))
         .rename({"order_month": "activity_month"})
     )

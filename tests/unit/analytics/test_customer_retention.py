@@ -20,11 +20,13 @@ from src.analytics.customer_retention import generate_customer_retention
 def test_generate_customer_retention_assigns_correct_cohort_month():
     """A customer's cohort is their FIRST purchase month, not any
     subsequent month. c1 buys in Jan and Mar; cohort must be Jan."""
-    orders = pl.DataFrame({
-        "order_id": ["o1", "o2"],
-        "customer_id": ["c1", "c1"],
-        "order_purchase_timestamp": [datetime(2024, 1, 15), datetime(2024, 3, 10)],
-    })
+    orders = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2"],
+            "customer_id": ["c1", "c1"],
+            "order_purchase_timestamp": [datetime(2024, 1, 15), datetime(2024, 3, 10)],
+        }
+    )
 
     result = generate_customer_retention(orders)
 
@@ -37,11 +39,13 @@ def test_generate_customer_retention_zero_activity_months_appear_explicitly():
     a later month must appear as active_customers=0, not be absent from
     the result. Skipping it would make retention visualisations
     incorrectly connect non-adjacent points."""
-    orders = pl.DataFrame({
-        "order_id": ["o1", "o2"],
-        "customer_id": ["c1", "c2"],
-        "order_purchase_timestamp": [datetime(2024, 1, 10), datetime(2024, 2, 20)],
-    })
+    orders = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2"],
+            "customer_id": ["c1", "c2"],
+            "order_purchase_timestamp": [datetime(2024, 1, 10), datetime(2024, 2, 20)],
+        }
+    )
 
     result = generate_customer_retention(orders)
 
@@ -58,15 +62,17 @@ def test_generate_customer_retention_rate_is_one_on_cohort_month():
     """Every customer in a cohort made at least one purchase that month
     by definition, so retention_rate must be exactly 1.0 for every
     cohort in its own month."""
-    orders = pl.DataFrame({
-        "order_id": ["o1", "o2", "o3"],
-        "customer_id": ["c1", "c2", "c3"],
-        "order_purchase_timestamp": [
-            datetime(2024, 1, 5),
-            datetime(2024, 1, 12),
-            datetime(2024, 1, 20),
-        ],
-    })
+    orders = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2", "o3"],
+            "customer_id": ["c1", "c2", "c3"],
+            "order_purchase_timestamp": [
+                datetime(2024, 1, 5),
+                datetime(2024, 1, 12),
+                datetime(2024, 1, 20),
+            ],
+        }
+    )
 
     result = generate_customer_retention(orders)
 
@@ -79,15 +85,17 @@ def test_generate_customer_retention_rate_is_one_on_cohort_month():
 
 
 def test_generate_customer_retention_sorted_by_cohort_then_activity_month():
-    orders = pl.DataFrame({
-        "order_id": ["o1", "o2", "o3"],
-        "customer_id": ["c1", "c2", "c1"],
-        "order_purchase_timestamp": [
-            datetime(2024, 1, 1),
-            datetime(2024, 2, 1),
-            datetime(2024, 2, 1),
-        ],
-    })
+    orders = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2", "o3"],
+            "customer_id": ["c1", "c2", "c1"],
+            "order_purchase_timestamp": [
+                datetime(2024, 1, 1),
+                datetime(2024, 2, 1),
+                datetime(2024, 2, 1),
+            ],
+        }
+    )
 
     result = generate_customer_retention(orders)
 

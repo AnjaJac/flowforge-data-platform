@@ -28,17 +28,19 @@ def test_generate_seller_performance_seller_with_no_reviews_gets_null_avg_score(
     """A seller present in order_items but absent from reviews must
     produce a null avg_review_score, not 0 or an error, because the
     left join must preserve all sellers regardless of review coverage."""
-    reviews = pl.DataFrame({
-        "order_id": ["o999"],  # order not in order_items
-        "review_score": [5],
-    })
+    reviews = pl.DataFrame(
+        {
+            "order_id": ["o999"],  # order not in order_items
+            "review_score": [5],
+        }
+    )
 
     result = generate_seller_performance(sample_order_items_df, reviews)
 
     for row in result.iter_rows(named=True):
-        assert row["avg_review_score"] is None, (
-            f"seller {row['seller_id']} has no reviews and must have null avg_review_score"
-        )
+        assert (
+            row["avg_review_score"] is None
+        ), f"seller {row['seller_id']} has no reviews and must have null avg_review_score"
 
 
 def test_generate_seller_performance_sorted_by_revenue_descending(

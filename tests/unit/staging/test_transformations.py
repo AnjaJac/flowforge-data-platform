@@ -1,5 +1,5 @@
 """
-Unit tests for src/staging/transformations.py 
+Unit tests for src/staging/transformations.py
 
 These cover the shared building blocks used by all 6 entity staging
 modules: column renaming, uppercasing, date parsing, and null-filling.
@@ -18,10 +18,10 @@ from src.staging.transformations import (
     fill_null_with,
 )
 
-
 # ---------------------------------------------------------------------------
 # to_snake_case
 # ---------------------------------------------------------------------------
+
 
 def test_to_snake_case_renames_messy_headers():
     """A column with a space and one with a hyphen should both come
@@ -42,6 +42,7 @@ def test_to_snake_case_leaves_already_clean_headers_unchanged():
 # ---------------------------------------------------------------------------
 # uppercase_columns
 # ---------------------------------------------------------------------------
+
 
 def test_uppercase_columns_only_affects_named_columns():
     """This is the key safety property: uppercase_columns must NOT
@@ -66,6 +67,7 @@ def test_uppercase_columns_missing_column_raises():
 # ---------------------------------------------------------------------------
 # parse_dates
 # ---------------------------------------------------------------------------
+
 
 def test_parse_dates_converts_valid_format():
     """A correctly formatted timestamp string should become a real
@@ -96,6 +98,7 @@ def test_parse_dates_missing_column_raises():
 # ---------------------------------------------------------------------------
 # fill_null_with
 # ---------------------------------------------------------------------------
+
 
 def test_fill_null_with_replaces_only_nulls():
     """Only the actual null value should be replaced - real existing

@@ -1,6 +1,6 @@
 from src.utils.metadata import generate_metadata, write_metadata
-from pathlib import Path
 import json
+
 
 def test_generate_metadata():
     metadata = generate_metadata(
@@ -22,6 +22,7 @@ def test_generate_metadata():
 
     assert "completed_at" in metadata
     assert "pipeline_meta" in metadata
+
 
 def test_write_metadata(tmp_path):
     output_file = tmp_path / "metadata.json"
@@ -45,6 +46,7 @@ def test_write_metadata(tmp_path):
 
     assert loaded["layer"] == "staging"
     assert loaded["dag_id"] == "staging_dag"
+
 
 def test_generate_metadata_failed_validation():
     metadata = generate_metadata(

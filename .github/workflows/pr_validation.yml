@@ -1,0 +1,46 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff black pytest pytest-cov
+
+      - name: Lint with Ruff
+        run: ruff check src/ tests/
+
+      - name: Check formatting with Black
+        run: black --check src/ tests/
+
+      - name: Run unit tests with coverage
+        run: python -m pytest
+
+      - name: Build custom Airflow Docker image
+        run: docker build -t flowforge-airflow:ci -f docker/airflow/Dockerfile .
+
+      - name: Validate DAG imports
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/airflow/dags:/opt/airflow/dags \
+            -v ${{ github.workspace }}/src:/opt/airflow/src \
+            -v ${{ github.workspace }}/config:/opt/airflow/config \
+            -e PYTHONPATH=/opt/airflow \
+            flowforge-airflow:ci \
+            bash -c "airflow db migrate && airflow dags list-import-errors"

@@ -1,0 +1,72 @@
+name: Main Branch Validation
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run unit tests with coverage
+        run: python -m pytest
+
+      - name: Create .env for CI
+        run: |
+          echo "AIRFLOW_SECRET_KEY=ci-secret-key-not-for-production" >> .env
+          echo "AIRFLOW_JWT_SECRET=ci-jwt-secret-not-for-production" >> .env
+          echo "POSTGRES_USER=airflow" >> .env
+          echo "POSTGRES_PASSWORD=airflow" >> .env
+          echo "POSTGRES_DB=airflow" >> .env
+
+      - name: Build and launch full stack
+        run: docker compose up -d --build
+
+      - name: Wait for services to become healthy
+        run: |
+          sleep 30
+          docker compose ps
+
+      - name: Confirm all containers are running
+        run: |
+          docker exec flowforge-scheduler airflow dags list-import-errors
+
+      - name: Trigger full pipeline (staging -> core -> analytics)
+        run: |
+          docker exec flowforge-scheduler airflow dags unpause staging_dag
+          docker exec flowforge-scheduler airflow dags unpause core_dag
+          docker exec flowforge-scheduler airflow dags unpause analytics_dag
+          docker exec flowforge-scheduler airflow dags trigger staging_dag
+          sleep 20
+          docker exec flowforge-scheduler airflow dags trigger core_dag
+          sleep 20
+          docker exec flowforge-scheduler airflow dags trigger analytics_dag
+          sleep 20
+
+      - name: Verify final analytics outputs exist
+        run: |
+          docker exec flowforge-scheduler test -f /opt/airflow/data/analytics/sales_performance.parquet
+          docker exec flowforge-scheduler test -f /opt/airflow/data/analytics/customer_lifetime_value.parquet
+          docker exec flowforge-scheduler test -f /opt/airflow/data/analytics/seller_performance.parquet
+          docker exec flowforge-scheduler test -f /opt/airflow/data/analytics/product_performance.parquet
+          docker exec flowforge-scheduler test -f /opt/airflow/data/analytics/customer_retention.parquet
+          docker exec flowforge-scheduler test -f /opt/airflow/data/analytics/analytics_quality_report.json
+
+      - name: Tear down stack
+        if: always()
+        run: docker compose down -v

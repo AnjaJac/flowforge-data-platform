@@ -14,7 +14,6 @@ import polars as pl
 from src.core.reconciliation import (
     ReconciliationError,
     reconcile_payments,
-    build_quarantine_records,
     run_reconciliation,
 )
 
@@ -29,8 +28,11 @@ def _write_core_files(tmp_path, orders, order_items, payments):
 # reconcile_payments
 # ---------------------------------------------------------------------------
 
+
 def test_reconcile_payments_passes_within_tolerance():
-    order_items = pl.DataFrame({"order_id": ["o1"], "price": [100.0], "freight_value": [10.0]})
+    order_items = pl.DataFrame(
+        {"order_id": ["o1"], "price": [100.0], "freight_value": [10.0]}
+    )
     payments = pl.DataFrame({"order_id": ["o1"], "payment_value": [110.0]})
 
     comparison, excluded = reconcile_payments(order_items, payments, tolerance=0.01)
@@ -40,7 +42,9 @@ def test_reconcile_payments_passes_within_tolerance():
 
 
 def test_reconcile_payments_fails_when_exceeding_tolerance():
-    order_items = pl.DataFrame({"order_id": ["o1"], "price": [100.0], "freight_value": [10.0]})
+    order_items = pl.DataFrame(
+        {"order_id": ["o1"], "price": [100.0], "freight_value": [10.0]}
+    )
     payments = pl.DataFrame({"order_id": ["o1"], "payment_value": [150.0]})
 
     comparison, excluded = reconcile_payments(order_items, payments, tolerance=0.01)
@@ -53,8 +57,14 @@ def test_reconcile_payments_excludes_orders_with_zero_order_items():
     """The key real-world finding: an order with a real payment but
     NO order_items must be excluded from the tolerance check, not
     compared against a fabricated expected_total of 0.0."""
-    order_items = pl.DataFrame({"order_id": [], "price": [], "freight_value": []},
-                                schema={"order_id": pl.String, "price": pl.Float64, "freight_value": pl.Float64})
+    order_items = pl.DataFrame(
+        {"order_id": [], "price": [], "freight_value": []},
+        schema={
+            "order_id": pl.String,
+            "price": pl.Float64,
+            "freight_value": pl.Float64,
+        },
+    )
     payments = pl.DataFrame({"order_id": ["o1"], "payment_value": [500.0]})
 
     comparison, excluded = reconcile_payments(order_items, payments, tolerance=0.01)
@@ -68,9 +78,12 @@ def test_reconcile_payments_excludes_orders_with_zero_order_items():
 # run_reconciliation - raise mode
 # ---------------------------------------------------------------------------
 
+
 def test_run_reconciliation_raise_mode_raises_on_violation(tmp_path):
     orders = pl.DataFrame({"order_id": ["o1"], "order_status": ["delivered"]})
-    order_items = pl.DataFrame({"order_id": ["o1"], "price": [100.0], "freight_value": [10.0]})
+    order_items = pl.DataFrame(
+        {"order_id": ["o1"], "price": [100.0], "freight_value": [10.0]}
+    )
     payments = pl.DataFrame({"order_id": ["o1"], "payment_value": [200.0]})
     _write_core_files(tmp_path, orders, order_items, payments)
 
@@ -88,7 +101,9 @@ def test_run_reconciliation_raise_mode_does_not_modify_core_files(tmp_path):
     exception itself is the signal, nothing should be silently
     filtered before the error is raised."""
     orders = pl.DataFrame({"order_id": ["o1"], "order_status": ["delivered"]})
-    order_items = pl.DataFrame({"order_id": ["o1"], "price": [100.0], "freight_value": [10.0]})
+    order_items = pl.DataFrame(
+        {"order_id": ["o1"], "price": [100.0], "freight_value": [10.0]}
+    )
     payments = pl.DataFrame({"order_id": ["o1"], "payment_value": [200.0]})
     _write_core_files(tmp_path, orders, order_items, payments)
 
@@ -108,20 +123,27 @@ def test_run_reconciliation_raise_mode_does_not_modify_core_files(tmp_path):
 # run_reconciliation - warn mode
 # ---------------------------------------------------------------------------
 
+
 def test_run_reconciliation_warn_mode_never_raises_and_quarantines(tmp_path):
-    orders = pl.DataFrame({
-        "order_id": ["o1", "o2"],
-        "order_status": ["delivered", "canceled"],
-    })
-    order_items = pl.DataFrame({
-        "order_id": ["o1"],
-        "price": [100.0],
-        "freight_value": [10.0],
-    })
-    payments = pl.DataFrame({
-        "order_id": ["o1", "o2"],
-        "payment_value": [110.0, 50.0],
-    })
+    orders = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2"],
+            "order_status": ["delivered", "canceled"],
+        }
+    )
+    order_items = pl.DataFrame(
+        {
+            "order_id": ["o1"],
+            "price": [100.0],
+            "freight_value": [10.0],
+        }
+    )
+    payments = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2"],
+            "payment_value": [110.0, 50.0],
+        }
+    )
     _write_core_files(tmp_path, orders, order_items, payments)
 
     config_path = tmp_path / "validation.yaml"
@@ -142,15 +164,21 @@ def test_run_reconciliation_warn_mode_never_raises_and_quarantines(tmp_path):
     assert quarantine["reason"].to_list() == ["no_order_items"]
 
 
-def test_run_reconciliation_warn_mode_removes_quarantined_orders_from_all_tables(tmp_path):
+def test_run_reconciliation_warn_mode_removes_quarantined_orders_from_all_tables(
+    tmp_path,
+):
     """Confirms the order is removed from orders, order_items, AND
     payments - not just one of the three tables."""
-    orders = pl.DataFrame({"order_id": ["o1", "o2"], "order_status": ["delivered", "delivered"]})
-    order_items = pl.DataFrame({
-        "order_id": ["o1", "o2"],
-        "price": [100.0, 100.0],
-        "freight_value": [10.0, 10.0],
-    })
+    orders = pl.DataFrame(
+        {"order_id": ["o1", "o2"], "order_status": ["delivered", "delivered"]}
+    )
+    order_items = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2"],
+            "price": [100.0, 100.0],
+            "freight_value": [10.0, 10.0],
+        }
+    )
     payments = pl.DataFrame({"order_id": ["o1", "o2"], "payment_value": [110.0, 999.0]})
     _write_core_files(tmp_path, orders, order_items, payments)
 
@@ -172,7 +200,9 @@ def test_run_reconciliation_warn_mode_removes_quarantined_orders_from_all_tables
 
 def test_run_reconciliation_no_violations_returns_clean_summary(tmp_path):
     orders = pl.DataFrame({"order_id": ["o1"], "order_status": ["delivered"]})
-    order_items = pl.DataFrame({"order_id": ["o1"], "price": [100.0], "freight_value": [10.0]})
+    order_items = pl.DataFrame(
+        {"order_id": ["o1"], "price": [100.0], "freight_value": [10.0]}
+    )
     payments = pl.DataFrame({"order_id": ["o1"], "payment_value": [110.0]})
     _write_core_files(tmp_path, orders, order_items, payments)
 

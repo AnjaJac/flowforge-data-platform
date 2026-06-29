@@ -44,8 +44,7 @@ def generate_quality_report(
     for report_name, value_columns in report_files.items():
         df = pl.read_parquet(analytics_dir / f"{report_name}.parquet")
         value_ranges = {
-            col: {"min": df[col].min(), "max": df[col].max()}
-            for col in value_columns
+            col: {"min": df[col].min(), "max": df[col].max()} for col in value_columns
         }
         report_summaries[report_name] = {
             "row_count": df.height,

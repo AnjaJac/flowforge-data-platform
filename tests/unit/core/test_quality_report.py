@@ -14,15 +14,17 @@ from src.core.quality_report import generate_quality_report
 def test_generate_quality_report_writes_json_with_all_three_sections(tmp_path):
     returned_path = generate_quality_report(
         dedup_results=[{"entity": "customers", "removed_count": 0}],
-        fk_results={"orders": {"customer_id": {"removed_count": 1, "missing_values": ["x"]}}},
+        fk_results={
+            "orders": {"customer_id": {"removed_count": 1, "missing_values": ["x"]}}
+        },
         reconciliation_summary={"orders_passed": 10, "orders_failed": 0},
         output_directory=str(tmp_path),
     )
 
     expected = tmp_path / "entity_quality_report.json"
-    assert expected.exists(), (
-        "report must be written inside tmp_path, not a system default path"
-    )
+    assert (
+        expected.exists()
+    ), "report must be written inside tmp_path, not a system default path"
     assert returned_path == str(expected)
 
     with open(expected) as f:
