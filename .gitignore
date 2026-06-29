@@ -39,4 +39,4 @@ build/
 
 *.parquet
 *.csv
-*.json
+data/**/*.json
