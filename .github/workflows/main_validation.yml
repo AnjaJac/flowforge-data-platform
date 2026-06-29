@@ -117,7 +117,17 @@ jobs:
 
           docker exec flowforge-scheduler airflow dags trigger analytics_dag --logical-date "$LOGICAL_DATE"
           wait_for_dag analytics_dag
-          
+
+      - name: Show staging_dag task states for debugging
+        if: always()
+        run: |
+          LOGICAL_DATE=$(cat /tmp/logical_date.txt)
+          docker exec flowforge-scheduler airflow tasks states-for-dag-run staging_dag "$LOGICAL_DATE"
+
+      - name: Show scheduler logs for staging_dag stall
+        if: always()
+        run: docker logs flowforge-scheduler --tail 150
+         
       - name: Show analytics_dag task states for debugging
         run: |
           LOGICAL_DATE=$(cat /tmp/logical_date.txt)
