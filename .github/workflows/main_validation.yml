@@ -95,8 +95,11 @@ jobs:
       
       - name: Show wait_for_core sensor log for debugging
         run: |
-          docker exec flowforge-scheduler find /opt/airflow/logs -path "*analytics_dag*wait_for_core*" -name "*.log" -exec cat {} \;
-          
+          echo "--- Searching for analytics_dag log directory ---"
+          docker exec flowforge-scheduler find /opt/airflow/logs -iname "*analytics_dag*" -type d
+          echo "--- Full structure under that directory, if found ---"
+          docker exec flowforge-scheduler find /opt/airflow/logs -iname "*wait_for_core*"
+
       - name: Verify final analytics outputs exist
         run: |
           docker exec flowforge-scheduler test -f /opt/airflow/data/analytics/sales_performance.parquet
