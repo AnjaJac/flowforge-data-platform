@@ -93,11 +93,8 @@ jobs:
           LOGICAL_DATE=$(cat /tmp/logical_date.txt)
           docker exec flowforge-scheduler airflow tasks states-for-dag-run analytics_dag "$LOGICAL_DATE"
       
-      - name: Show wait_for_core sensor log for debugging
-        run: |
-          docker exec flowforge-scheduler find "/opt/airflow/logs/dag_id=analytics_dag" -type f -exec ls -la {} \;
-          echo "--- attempting to cat everything found ---"
-          docker exec flowforge-scheduler find "/opt/airflow/logs/dag_id=analytics_dag" -type f -exec cat {} \;
+      - name: Show scheduler logs around wait_for_core failure
+        run: docker logs flowforge-scheduler --tail 100
 
       - name: Verify final analytics outputs exist
         run: |
