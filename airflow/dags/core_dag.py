@@ -1,5 +1,4 @@
 from airflow import DAG
-from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
 from airflow.sensors.external_task import ExternalTaskSensor
 from datetime import datetime
@@ -11,6 +10,9 @@ import yaml
 from src.core.dedup import dedup_entity
 from src.staging.quality_check import load_quality_config
 from src.core.relationship_validation import run_relationship_validation
+from src.core.reconciliation import run_reconciliation
+from src.core.publish_metadata import publish_metadata as write_core_metadata
+from src.core.quality_report import generate_quality_report
 
 STAGING_DIR = "/opt/airflow/data/staging"
 CORE_DIR = "/opt/airflow/data/core"
@@ -36,6 +38,8 @@ def run_dedup_for_entity(entity_name: str):
 
     deduped_df.write_parquet(f"{CORE_DIR}/core_{entity_name}.parquet")
 
+    return {"entity": entity_name, "removed_count": removed_count}
+
 def run_relationship_validation_task():
     reports = run_relationship_validation(
         core_dir=CORE_DIR,
@@ -46,6 +50,62 @@ def run_relationship_validation_task():
             print(f"[{entity_name}.{column}] removed: {result['removed_count']}")
     return reports
 
+def run_reconciliation_task():
+    summary = run_reconciliation(
+        core_dir=CORE_DIR,
+        config_path=VALIDATION_CONFIG_PATH,
+    )
+    print(f"[reconciliation] {summary}")
+    return summary
+
+def run_reconciliation_task():
+    summary = run_reconciliation(
+        core_dir=CORE_DIR,
+        config_path=VALIDATION_CONFIG_PATH,
+    )
+    print(f"[reconciliation] {summary}")
+    return summary
+
+
+def run_publish_metadata_task(**context):
+    ti = context["ti"]
+    dedup_results = [
+        ti.xcom_pull(task_ids=f"dedup_{entity}_task") for entity in ENTITIES
+    ]
+    fk_results = ti.xcom_pull(task_ids="relationship_validation_task")
+    reconciliation_summary = ti.xcom_pull(task_ids="reconciliation_task")
+
+    execution_summary = {
+        "dedup_results": dedup_results,
+        "fk_results": fk_results,
+        "reconciliation_summary": reconciliation_summary,
+    }
+
+    write_core_metadata(
+        execution_summary=execution_summary,
+        dag_id=context["dag"].dag_id,
+        run_id=context["run_id"],
+        execution_date=str(context.get("logical_date", context.get("ds", "unknown"))),
+        output_directory=CORE_DIR,
+    )
+
+
+def run_quality_report_task(**context):
+    ti = context["ti"]
+    dedup_results = [
+        ti.xcom_pull(task_ids=f"dedup_{entity}_task") for entity in ENTITIES
+    ]
+    fk_results = ti.xcom_pull(task_ids="relationship_validation_task")
+    reconciliation_summary = ti.xcom_pull(task_ids="reconciliation_task")
+
+    path = generate_quality_report(
+        dedup_results=dedup_results,
+        fk_results=fk_results,
+        reconciliation_summary=reconciliation_summary,
+        output_directory=CORE_DIR,
+    )
+    print(f"[quality_report] written to {path}")
+    return path
 
 with DAG(
     dag_id="core_dag",
@@ -75,9 +135,19 @@ with DAG(
         task_id="relationship_validation_task",
         python_callable=run_relationship_validation_task,
     )
-
-    publish_metadata = EmptyOperator(
-        task_id="publish_metadata"
+    reconciliation_task = PythonOperator(
+        task_id="reconciliation_task",
+        python_callable=run_reconciliation_task,
     )
 
-    wait_for_staging >> dedup_tasks >> relationship_validation_task >> publish_metadata
+    publish_metadata = PythonOperator(
+        task_id="publish_metadata",
+        python_callable=run_publish_metadata_task,
+    )
+
+    quality_report_task = PythonOperator(
+        task_id="quality_report_task",
+        python_callable=run_quality_report_task,
+    )
+
+    wait_for_staging >> dedup_tasks >> relationship_validation_task >> reconciliation_task >> publish_metadata >> quality_report_task
