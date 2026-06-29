@@ -16,6 +16,9 @@ services:
       - flowforge-network
   airflow-init:
     image: flowforge-airflow:dev
+    build:
+      context: .
+      dockerfile: docker/airflow/Dockerfile
     container_name: flowforge-init
     environment:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@flowforge-postgres:5432/${POSTGRES_DB}
@@ -37,6 +40,9 @@ services:
     command: airflow db migrate
   airflow-webserver:
     image: flowforge-airflow:dev
+    build:
+      context: .
+      dockerfile: docker/airflow/Dockerfile
     container_name: flowforge-webserver
     environment:
       PYTHONPATH: /opt/airflow
@@ -68,6 +74,9 @@ services:
     command: airflow api-server
   airflow-scheduler:
     image: flowforge-airflow:dev
+    build:
+      context: .
+      dockerfile: docker/airflow/Dockerfile
     container_name: flowforge-scheduler
     environment:
       PYTHONPATH: /opt/airflow
@@ -97,6 +106,9 @@ services:
     command: airflow scheduler
   airflow-dag-processor:
     image: flowforge-airflow:dev
+    build:
+      context: .
+      dockerfile: docker/airflow/Dockerfile
     container_name: flowforge-dag-processor
     environment:
       PYTHONPATH: /opt/airflow
