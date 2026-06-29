@@ -122,3 +122,7 @@ foreign_keys:
     - column: order_id
       references_entity: orders
       references_column: order_id
+
+financial_reconciliation:
+  tolerance: 0.01
+  on_failure: warn
