@@ -79,13 +79,13 @@ jobs:
           sleep 20
           docker exec flowforge-scheduler airflow dags trigger analytics_dag --logical-date "$LOGICAL_DATE" | tee /tmp/analytics_trigger_output.txt
           sleep 20
-          
+
       - name: Show task states for debugging
         run: |
           docker exec flowforge-scheduler airflow dags list-runs analytics_dag
       - name: Show analytics_dag task states for debugging
         run: |
-          RUN_ID=$(grep -oP '(?<=\| )manual__[^ ]+' /tmp/analytics_trigger_output.txt | head -1)
+          RUN_ID=$(grep -oP 'manual__[0-9T:.+-]+_[A-Za-z0-9]+' /tmp/analytics_trigger_output.txt | head -1)
           echo "Captured run_id: $RUN_ID"
           docker exec flowforge-scheduler airflow tasks states-for-dag-run analytics_dag "$RUN_ID"
       - name: Verify final analytics outputs exist
