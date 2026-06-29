@@ -45,7 +45,7 @@ jobs:
       - name: Confirm all containers are running
         run: |
           docker exec flowforge-scheduler airflow dags list-import-errors
-          
+
       - name: Show dag-processor logs for debugging
         run: docker logs flowforge-dag-processor --tail 50
 
@@ -80,6 +80,11 @@ jobs:
           docker exec flowforge-scheduler test -f /opt/airflow/data/analytics/customer_retention.parquet
           docker exec flowforge-scheduler test -f /opt/airflow/data/analytics/analytics_quality_report.json
 
+      - name: Prepare logs directory with correct permissions
+        run: |
+          mkdir -p airflow/logs
+          chmod -R 777 airflow/logs
+          
       - name: Tear down stack
         if: always()
         run: docker compose down -v
