@@ -34,6 +34,12 @@ jobs:
           echo "POSTGRES_PASSWORD=airflow" >> .env
           echo "POSTGRES_DB=airflow" >> .env
 
+      - name: Prepare logs directory with correct permissions
+        run: |
+          mkdir -p airflow/logs
+          chmod -R 777 airflow/logs
+
+
       - name: Build and launch full stack
         run: docker compose up -d --build
 
@@ -80,11 +86,6 @@ jobs:
           docker exec flowforge-scheduler test -f /opt/airflow/data/analytics/customer_retention.parquet
           docker exec flowforge-scheduler test -f /opt/airflow/data/analytics/analytics_quality_report.json
 
-      - name: Prepare logs directory with correct permissions
-        run: |
-          mkdir -p airflow/logs
-          chmod -R 777 airflow/logs
-          
       - name: Tear down stack
         if: always()
         run: docker compose down -v
