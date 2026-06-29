@@ -90,12 +90,27 @@ jobs:
           echo "Using shared logical date: $LOGICAL_DATE"
           echo "$LOGICAL_DATE" > /tmp/logical_date.txt
 
+          wait_for_dag() {
+            DAG_ID=$1
+            echo "Waiting for $DAG_ID to finish..."
+            for i in $(seq 1 30); do
+              STATE=$(docker exec flowforge-scheduler airflow dags state "$DAG_ID" "$LOGICAL_DATE" 2>/dev/null || echo "unknown")
+              echo "  $DAG_ID state: $STATE"
+              if [ "$STATE" = "success" ] || [ "$STATE" = "failed" ]; then
+                break
+              fi
+              sleep 10
+            done
+          }
+
           docker exec flowforge-scheduler airflow dags trigger staging_dag --logical-date "$LOGICAL_DATE"
-          sleep 20
+          wait_for_dag staging_dag
+
           docker exec flowforge-scheduler airflow dags trigger core_dag --logical-date "$LOGICAL_DATE"
-          sleep 20
+          wait_for_dag core_dag
+
           docker exec flowforge-scheduler airflow dags trigger analytics_dag --logical-date "$LOGICAL_DATE"
-          sleep 20
+          wait_for_dag analytics_dag
 
       - name: Show analytics_dag task states for debugging
         run: |
