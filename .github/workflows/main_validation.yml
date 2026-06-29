@@ -93,14 +93,20 @@ jobs:
           wait_for_dag() {
             DAG_ID=$1
             echo "Waiting for $DAG_ID to finish..."
-            for i in $(seq 1 30); do
+            for i in $(seq 1 60); do
               STATE=$(docker exec flowforge-scheduler airflow dags state "$DAG_ID" "$LOGICAL_DATE" 2>/dev/null || echo "unknown")
               echo "  $DAG_ID state: $STATE"
-              if [ "$STATE" = "success" ] || [ "$STATE" = "failed" ]; then
-                break
+              if [ "$STATE" = "success" ]; then
+                return 0
+              fi
+              if [ "$STATE" = "failed" ]; then
+                echo "ERROR: $DAG_ID failed."
+                exit 1
               fi
               sleep 10
             done
+            echo "ERROR: $DAG_ID did not finish within timeout."
+            exit 1
           }
 
           docker exec flowforge-scheduler airflow dags trigger staging_dag --logical-date "$LOGICAL_DATE"
@@ -111,7 +117,7 @@ jobs:
 
           docker exec flowforge-scheduler airflow dags trigger analytics_dag --logical-date "$LOGICAL_DATE"
           wait_for_dag analytics_dag
-
+          
       - name: Show analytics_dag task states for debugging
         run: |
           LOGICAL_DATE=$(cat /tmp/logical_date.txt)
