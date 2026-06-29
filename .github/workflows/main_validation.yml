@@ -39,7 +39,6 @@ jobs:
           mkdir -p airflow/logs
           chmod -R 777 airflow/logs
 
-
       - name: Build and launch full stack
         run: docker compose up -d --build
 
@@ -47,6 +46,15 @@ jobs:
         run: |
           sleep 30
           docker compose ps
+
+          echo "Waiting for webserver API to respond..."
+          for i in $(seq 1 20); do
+            if docker exec flowforge-scheduler curl -sf http://flowforge-webserver:8080/api/v2/monitor/health > /dev/null 2>&1; then
+              echo "Webserver is responding."
+              break
+            fi
+            sleep 5
+          done
 
       - name: Confirm all containers are running
         run: |
@@ -61,10 +69,11 @@ jobs:
           docker exec flowforge-scheduler airflow dags unpause core_dag
           docker exec flowforge-scheduler airflow dags unpause analytics_dag
 
-          echo "Waiting for staging_dag to register..."
+          echo "Waiting for all DAGs to register..."
           for i in $(seq 1 20); do
-            if docker exec flowforge-scheduler airflow dags list | grep -q staging_dag; then
-              echo "staging_dag registered."
+            REGISTERED=$(docker exec flowforge-scheduler airflow dags list)
+            if echo "$REGISTERED" | grep -q staging_dag && echo "$REGISTERED" | grep -q core_dag && echo "$REGISTERED" | grep -q analytics_dag; then
+              echo "All DAGs registered."
               break
             fi
             sleep 5
@@ -78,23 +87,13 @@ jobs:
           sleep 20
           docker exec flowforge-scheduler airflow dags trigger core_dag --logical-date "$LOGICAL_DATE"
           sleep 20
-          docker exec flowforge-scheduler airflow dags trigger analytics_dag --logical-date "$LOGICAL_DATE" | tee /tmp/analytics_trigger_output.txt
+          docker exec flowforge-scheduler airflow dags trigger analytics_dag --logical-date "$LOGICAL_DATE"
           sleep 20
 
-      - name: Show task states for debugging
-        run: |
-          docker exec flowforge-scheduler airflow dags list-runs analytics_dag
-      
-      - name: Show raw analytics trigger output for debugging
-        run: cat /tmp/analytics_trigger_output.txt
-      
       - name: Show analytics_dag task states for debugging
         run: |
           LOGICAL_DATE=$(cat /tmp/logical_date.txt)
           docker exec flowforge-scheduler airflow tasks states-for-dag-run analytics_dag "$LOGICAL_DATE"
-      
-      - name: Show scheduler logs around wait_for_core failure
-        run: docker logs flowforge-scheduler --tail 100
 
       - name: Verify final analytics outputs exist
         run: |
