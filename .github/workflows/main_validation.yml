@@ -95,7 +95,9 @@ jobs:
       
       - name: Show wait_for_core sensor log for debugging
         run: |
-          docker exec flowforge-scheduler find "/opt/airflow/logs/dag_id=analytics_dag" -name "*.log" -path "*wait_for_core*" -exec cat {} \;
+          docker exec flowforge-scheduler find "/opt/airflow/logs/dag_id=analytics_dag" -type f -exec ls -la {} \;
+          echo "--- attempting to cat everything found ---"
+          docker exec flowforge-scheduler find "/opt/airflow/logs/dag_id=analytics_dag" -type f -exec cat {} \;
 
       - name: Verify final analytics outputs exist
         run: |
