@@ -30,7 +30,7 @@ jobs:
         run: black --check src/ tests/
 
       - name: Run unit tests with coverage
-        run: pytest
+        run: python -m pytest
 
       - name: Build custom Airflow Docker image
         run: docker build -t flowforge-airflow:ci -f docker/airflow/Dockerfile .

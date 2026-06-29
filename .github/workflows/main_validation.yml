@@ -24,7 +24,7 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Run unit tests with coverage
-        run: pytest
+        run: python -m pytest
 
       - name: Create .env for CI
         run: |
