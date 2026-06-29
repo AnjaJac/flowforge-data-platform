@@ -13,6 +13,9 @@ from src.analytics.customer_lifetime_value import generate_customer_lifetime_val
 from src.analytics.seller_performance import generate_seller_performance
 from src.analytics.product_performance import generate_product_performance
 from src.analytics.customer_retention import generate_customer_retention
+from src.analytics.validation import run_analytics_validation
+from src.analytics.quality_report import generate_quality_report
+from src.analytics.publish_metadata import publish_analytics as write_analytics_metadata
 
 CORE_DIR = "/opt/airflow/data/core"
 ANALYTICS_DIR = "/opt/airflow/data/analytics"
@@ -60,6 +63,37 @@ def run_customer_retention():
     result.write_parquet(f"{ANALYTICS_DIR}/customer_retention.parquet")
     return {"report": "customer_retention", "row_count": result.height}
 
+def run_analytics_validation_task():
+    result = run_analytics_validation(
+        analytics_dir=ANALYTICS_DIR,
+        core_dir=CORE_DIR,
+    )
+    print(f"[analytics_validation] {result}")
+    return result
+
+def run_publish_metadata_task(**context):
+    ti = context["ti"]
+    validation_result = ti.xcom_pull(task_ids="analytics_validation_task")
+
+    write_analytics_metadata(
+        execution_summary={"validation_result": validation_result},
+        dag_id=context["dag"].dag_id,
+        run_id=context["run_id"],
+        execution_date=str(context.get("logical_date", context.get("ds", "unknown"))),
+        output_directory=ANALYTICS_DIR,
+    )
+
+
+def run_quality_report_task(**context):
+    ti = context["ti"]
+    validation_result = ti.xcom_pull(task_ids="analytics_validation_task")
+
+    path = generate_quality_report(
+        analytics_dir=ANALYTICS_DIR,
+        validation_result=validation_result,
+    )
+    print(f"[quality_report] written to {path}")
+    return path
 
 with DAG(
     dag_id="analytics_dag",
@@ -105,8 +139,19 @@ with DAG(
         customer_retention_task,
     ]
 
-    publish_metadata = EmptyOperator(
-        task_id="publish_metadata"
+    analytics_validation_task = PythonOperator(
+        task_id="analytics_validation_task",
+        python_callable=run_analytics_validation_task,
     )
 
-    wait_for_core >> analytics_tasks >> publish_metadata
+    publish_metadata = PythonOperator(
+        task_id="publish_metadata",
+        python_callable=run_publish_metadata_task,
+    )
+
+    quality_report_task = PythonOperator(
+        task_id="quality_report_task",
+        python_callable=run_quality_report_task,
+    )
+
+    wait_for_core >> analytics_tasks >> analytics_validation_task >> publish_metadata >> quality_report_task
