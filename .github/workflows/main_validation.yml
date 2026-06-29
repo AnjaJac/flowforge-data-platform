@@ -38,6 +38,7 @@ jobs:
         run: |
           mkdir -p airflow/logs
           chmod -R 777 airflow/logs
+          chmod 666 airflow/config/simple_auth_manager_passwords.json
 
       - name: Build and launch full stack
         run: docker compose up -d --build
@@ -68,7 +69,7 @@ jobs:
           docker compose ps
           echo "--- webserver logs ---"
           docker logs flowforge-webserver --tail 50
-          
+
       - name: Trigger full pipeline (staging -> core -> analytics)
         run: |
           docker exec flowforge-scheduler airflow dags unpause staging_dag
