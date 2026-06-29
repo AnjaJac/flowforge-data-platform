@@ -15,7 +15,11 @@ from src.staging.publish_metadata import publish_metadata
 
 def test_publish_metadata_writes_real_json_file(tmp_path):
     quality_results = {
-        "customers": {"passed": True, "duplicate_count": 0, "null_rates": {"customer_id": 0.0}},
+        "customers": {
+            "passed": True,
+            "duplicate_count": 0,
+            "null_rates": {"customer_id": 0.0},
+        },
     }
 
     output_path = publish_metadata(
@@ -42,8 +46,16 @@ def test_publish_metadata_preserves_entity_results_unchanged(tmp_path):
     no name-derivation step (unlike Ingestion's publish_metadata,
     which derives entity names from a file path)."""
     quality_results = {
-        "orders": {"passed": True, "duplicate_count": 0, "null_rates": {"order_id": 0.0}},
-        "reviews": {"passed": True, "duplicate_count": 0, "null_rates": {"review_id": 0.0, "review_comment_message": 0.58}},
+        "orders": {
+            "passed": True,
+            "duplicate_count": 0,
+            "null_rates": {"order_id": 0.0},
+        },
+        "reviews": {
+            "passed": True,
+            "duplicate_count": 0,
+            "null_rates": {"review_id": 0.0, "review_comment_message": 0.58},
+        },
     }
 
     output_path = publish_metadata(

@@ -7,11 +7,11 @@ from src.utils.metadata import (
 
 
 def publish_metadata(
-        ingestion_results: list[dict],
-        dag_id: str,
-        run_id: str,
-        execution_date: str,
-        output_directory: str,
+    ingestion_results: list[dict],
+    dag_id: str,
+    run_id: str,
+    execution_date: str,
+    output_directory: str,
 ) -> str:
     """
     Generate and publish metadata for the Raw layer.
@@ -39,13 +39,11 @@ def publish_metadata(
 
     for result in ingestion_results:
 
-        dataset_name = (
-           Path(result["output_file_path"]).stem  
-        )
+        dataset_name = Path(result["output_file_path"]).stem
 
         entities[dataset_name] = result
     metadata = generate_metadata(
-        layer = "raw",
+        layer="raw",
         dag_id=dag_id,
         run_id=run_id,
         execution_date=execution_date,
@@ -54,10 +52,7 @@ def publish_metadata(
         entities=entities,
     )
 
-    output_path = (
-        Path(output_directory)
-        / "metadata.json"
-    )
+    output_path = Path(output_directory) / "metadata.json"
 
     write_metadata(
         metadata,

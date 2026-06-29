@@ -26,9 +26,9 @@ def test_publish_analytics_writes_metadata_json(tmp_path):
     )
 
     expected = out_dir / "metadata.json"
-    assert expected.exists(), (
-        "metadata.json must be written inside tmp_path/analytics/, not a system path"
-    )
+    assert (
+        expected.exists()
+    ), "metadata.json must be written inside tmp_path/analytics/, not a system path"
     assert returned_path == str(expected)
 
 

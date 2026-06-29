@@ -8,7 +8,6 @@ custom separator is forwarded to read_csv, not silently ignored.
 """
 
 import polars as pl
-import pytest
 
 from src.utils.io import read_csv_to_polars, write_polars_to_parquet
 

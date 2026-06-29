@@ -33,11 +33,13 @@ def test_dedup_entity_raises_when_duplicates_exist_and_no_tiebreaker():
 def test_dedup_entity_keeps_most_recent_when_tiebreaker_provided():
     """The only way to prove this branch works, since no real
     dataset in this project ever reaches it."""
-    df = pl.DataFrame({
-        "customer_id": ["c1", "c1", "c2"],
-        "processing_timestamp": [1, 2, 1],
-        "customer_city": ["OLD CITY", "NEW CITY", "OTHER"],
-    })
+    df = pl.DataFrame(
+        {
+            "customer_id": ["c1", "c1", "c2"],
+            "processing_timestamp": [1, 2, 1],
+            "customer_city": ["OLD CITY", "NEW CITY", "OTHER"],
+        }
+    )
     result_df, removed = dedup_entity(
         df, "customers", ["customer_id"], tiebreaker_column="processing_timestamp"
     )
@@ -50,13 +52,17 @@ def test_dedup_entity_keeps_most_recent_when_tiebreaker_provided():
 def test_dedup_entity_handles_composite_primary_key():
     """Must work identically for composite keys (e.g. payments,
     order_items, reviews) as for single-column keys."""
-    df = pl.DataFrame({
-        "order_id": ["o1", "o1", "o2"],
-        "payment_sequential": [1, 1, 1],
-        "processing_timestamp": [1, 2, 1],
-    })
+    df = pl.DataFrame(
+        {
+            "order_id": ["o1", "o1", "o2"],
+            "payment_sequential": [1, 1, 1],
+            "processing_timestamp": [1, 2, 1],
+        }
+    )
     result_df, removed = dedup_entity(
-        df, "payments", ["order_id", "payment_sequential"],
+        df,
+        "payments",
+        ["order_id", "payment_sequential"],
         tiebreaker_column="processing_timestamp",
     )
     assert result_df.height == 2

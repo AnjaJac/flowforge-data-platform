@@ -1,5 +1,6 @@
 import polars as pl
 
+
 def read_csv_to_polars(file_path: str, separator: str = ",") -> pl.DataFrame:
     """
     Read a CSV file into a Polars DataFrame
@@ -21,7 +22,6 @@ def write_polars_to_parquet(df: pl.DataFrame, file_path: str) -> None:
     Args:
         df: Polars DataFrame.
         file_path: Path to the output Parquet file.
-        
+
     """
     df.write_parquet(file_path, compression="snappy")
-

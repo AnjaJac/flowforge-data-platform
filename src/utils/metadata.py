@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from datetime import UTC, datetime
 
+
 def write_metadata(metadata: dict, output_path: str) -> None:
     """
     Write metadata dictionary to a JSON file.
@@ -17,13 +18,13 @@ def write_metadata(metadata: dict, output_path: str) -> None:
 
 
 def generate_metadata(
-        layer: str,
-        dag_id: str,
-        run_id: str,
-        execution_date: str,
-        status: str,
-        entities: dict,
-        validation_passed: bool = True,
+    layer: str,
+    dag_id: str,
+    run_id: str,
+    execution_date: str,
+    status: str,
+    entities: dict,
+    validation_passed: bool = True,
 ) -> dict:
     """
     Generate standardized metadata payload.
@@ -51,4 +52,3 @@ def generate_metadata(
         "entities": entities,
         "pipeline_meta": {},
     }
-

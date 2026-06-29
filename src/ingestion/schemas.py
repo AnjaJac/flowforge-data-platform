@@ -8,7 +8,7 @@ ORDERS_SCHEMA = {
     "order_approved_at": pl.String,
     "order_delivered_carrier_date": pl.String,
     "order_delivered_customer_date": pl.String,
-    "order_estimated_delivery_date": pl.String
+    "order_estimated_delivery_date": pl.String,
 }
 
 PAYMENTS_SCHEMA = {
@@ -16,7 +16,7 @@ PAYMENTS_SCHEMA = {
     "payment_sequential": pl.Int64,
     "payment_type": pl.String,
     "payment_installments": pl.Int64,
-    "payment_value": pl.Float64
+    "payment_value": pl.Float64,
 }
 
 

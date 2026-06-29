@@ -12,7 +12,6 @@ that specific gap.
 """
 
 import polars as pl
-import pytest
 
 from src.core.reconciliation import run_reconciliation
 
@@ -35,19 +34,25 @@ def test_run_reconciliation_raise_mode_returns_summary_when_no_failures_but_some
     core_dir = tmp_path / "core"
     core_dir.mkdir()
 
-    orders = pl.DataFrame({
-        "order_id": ["o1", "o_excluded"],
-        "order_status": ["delivered", "canceled"],
-    })
-    order_items = pl.DataFrame({
-        "order_id": ["o1"],
-        "price": [100.0],
-        "freight_value": [10.0],
-    })
-    payments = pl.DataFrame({
-        "order_id": ["o1", "o_excluded"],
-        "payment_value": [110.0, 50.0],
-    })
+    orders = pl.DataFrame(
+        {
+            "order_id": ["o1", "o_excluded"],
+            "order_status": ["delivered", "canceled"],
+        }
+    )
+    order_items = pl.DataFrame(
+        {
+            "order_id": ["o1"],
+            "price": [100.0],
+            "freight_value": [10.0],
+        }
+    )
+    payments = pl.DataFrame(
+        {
+            "order_id": ["o1", "o_excluded"],
+            "payment_value": [110.0, 50.0],
+        }
+    )
     _write_core_files(core_dir, orders, order_items, payments)
 
     config_path = tmp_path / "validation.yaml"
@@ -60,6 +65,6 @@ def test_run_reconciliation_raise_mode_returns_summary_when_no_failures_but_some
     assert summary["orders_failed"] == 0
     assert summary["excluded_order_count"] == 1
     assert summary["on_failure_mode"] == "raise"
-    assert "quarantined_order_count" not in summary, (
-        "raise mode must not write a quarantine - that is warn mode's responsibility"
-    )
+    assert (
+        "quarantined_order_count" not in summary
+    ), "raise mode must not write a quarantine - that is warn mode's responsibility"

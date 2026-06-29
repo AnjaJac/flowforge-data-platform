@@ -18,10 +18,10 @@ from src.staging.quality_check import (
     run_quality_check,
 )
 
-
 # ---------------------------------------------------------------------------
 # check_primary_key_uniqueness
 # ---------------------------------------------------------------------------
+
 
 def test_check_primary_key_uniqueness_passes_on_unique_single_column():
     df = pl.DataFrame({"customer_id": ["c1", "c2", "c3"]})
@@ -40,10 +40,12 @@ def test_check_primary_key_uniqueness_passes_on_unique_composite_key():
     review_id alone repeats legitimately, but (review_id, order_id)
     is genuinely unique. Composite keys must be checked as a
     combination, not column by column."""
-    df = pl.DataFrame({
-        "review_id": ["r1", "r1", "r2"],
-        "order_id": ["o1", "o2", "o3"],
-    })
+    df = pl.DataFrame(
+        {
+            "review_id": ["r1", "r1", "r2"],
+            "order_id": ["o1", "o2", "o3"],
+        }
+    )
     duplicate_count = check_primary_key_uniqueness(
         df, "reviews", ["review_id", "order_id"]
     )
@@ -51,10 +53,12 @@ def test_check_primary_key_uniqueness_passes_on_unique_composite_key():
 
 
 def test_check_primary_key_uniqueness_raises_on_duplicate_composite_key():
-    df = pl.DataFrame({
-        "review_id": ["r1", "r1"],
-        "order_id": ["o1", "o1"],
-    })
+    df = pl.DataFrame(
+        {
+            "review_id": ["r1", "r1"],
+            "order_id": ["o1", "o1"],
+        }
+    )
     with pytest.raises(QualityCheckError, match="duplicate primary key"):
         check_primary_key_uniqueness(df, "reviews", ["review_id", "order_id"])
 
@@ -62,6 +66,7 @@ def test_check_primary_key_uniqueness_raises_on_duplicate_composite_key():
 # ---------------------------------------------------------------------------
 # check_null_thresholds
 # ---------------------------------------------------------------------------
+
 
 def test_check_null_thresholds_passes_within_threshold():
     df = pl.DataFrame({"category": ["a", "b", None, "d"]})
@@ -86,10 +91,12 @@ def test_check_null_thresholds_zero_tolerance_column():
 def test_check_null_thresholds_only_checks_named_columns():
     """A column with no configured threshold must be ignored, even
     if it has nulls - same explicit-list discipline as Card 4.2."""
-    df = pl.DataFrame({
-        "customer_id": ["c1", "c2"],
-        "some_other_column": [None, None],
-    })
+    df = pl.DataFrame(
+        {
+            "customer_id": ["c1", "c2"],
+            "some_other_column": [None, None],
+        }
+    )
     result = check_null_thresholds(df, "customers", {"customer_id": 0.0})
     assert "some_other_column" not in result
 
@@ -97,6 +104,7 @@ def test_check_null_thresholds_only_checks_named_columns():
 # ---------------------------------------------------------------------------
 # run_quality_check
 # ---------------------------------------------------------------------------
+
 
 def test_run_quality_check_passes_when_all_entities_pass(tmp_path):
     staging_dir = tmp_path / "staging"
@@ -106,12 +114,16 @@ def test_run_quality_check_passes_when_all_entities_pass(tmp_path):
     )
 
     config_path = tmp_path / "validation.yaml"
-    config_path.write_text(yaml.dump({
-        "quality": {
-            "primary_keys": {"customers": ["customer_id"]},
-            "null_thresholds": {"customers": {"customer_id": 0.0}},
-        }
-    }))
+    config_path.write_text(
+        yaml.dump(
+            {
+                "quality": {
+                    "primary_keys": {"customers": ["customer_id"]},
+                    "null_thresholds": {"customers": {"customer_id": 0.0}},
+                }
+            }
+        )
+    )
 
     results = run_quality_check(staging_dir, config_path)
     assert results["customers"]["passed"] is True
@@ -131,15 +143,19 @@ def test_run_quality_check_fails_fast_on_first_bad_entity(tmp_path):
     )
 
     config_path = tmp_path / "validation.yaml"
-    config_path.write_text(yaml.dump({
-        "quality": {
-            "primary_keys": {
-                "customers": ["customer_id"],
-                "orders": ["order_id"],
-            },
-            "null_thresholds": {},
-        }
-    }))
+    config_path.write_text(
+        yaml.dump(
+            {
+                "quality": {
+                    "primary_keys": {
+                        "customers": ["customer_id"],
+                        "orders": ["order_id"],
+                    },
+                    "null_thresholds": {},
+                }
+            }
+        )
+    )
 
     with pytest.raises(QualityCheckError, match=r"\[orders\]"):
         run_quality_check(staging_dir, config_path)

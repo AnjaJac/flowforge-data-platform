@@ -65,9 +65,7 @@ def uppercase_columns(df: pl.DataFrame, columns: list[str]) -> pl.DataFrame:
             f"uppercase_columns: column(s) not found in DataFrame: {missing}"
         )
 
-    return df.with_columns(
-        [pl.col(c).str.to_uppercase() for c in columns]
-    )
+    return df.with_columns([pl.col(c).str.to_uppercase() for c in columns])
 
 
 def parse_dates(
@@ -105,15 +103,10 @@ def parse_dates(
     """
     missing = [c for c in columns if c not in df.columns]
     if missing:
-        raise ValueError(
-            f"parse_dates: column(s) not found in DataFrame: {missing}"
-        )
+        raise ValueError(f"parse_dates: column(s) not found in DataFrame: {missing}")
 
     return df.with_columns(
-        [
-            pl.col(c).str.to_datetime(format, strict=True)
-            for c in columns
-        ]
+        [pl.col(c).str.to_datetime(format, strict=True) for c in columns]
     )
 
 

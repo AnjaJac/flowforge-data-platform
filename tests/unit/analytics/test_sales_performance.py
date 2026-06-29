@@ -15,15 +15,19 @@ from src.analytics.sales_performance import generate_sales_performance
 
 
 def test_generate_sales_performance_groups_gmv_by_month():
-    orders = pl.DataFrame({
-        "order_id": ["o1", "o2"],
-        "customer_id": ["c1", "c2"],
-        "order_purchase_timestamp": [datetime(2024, 1, 15), datetime(2024, 1, 28)],
-    })
-    payments = pl.DataFrame({
-        "order_id": ["o1", "o2"],
-        "payment_value": [60.0, 40.0],
-    })
+    orders = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2"],
+            "customer_id": ["c1", "c2"],
+            "order_purchase_timestamp": [datetime(2024, 1, 15), datetime(2024, 1, 28)],
+        }
+    )
+    payments = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2"],
+            "payment_value": [60.0, 40.0],
+        }
+    )
 
     result = generate_sales_performance(orders, payments)
 
@@ -35,15 +39,19 @@ def test_generate_sales_performance_groups_gmv_by_month():
 def test_generate_sales_performance_aov_is_gmv_over_order_count():
     """AOV = GMV / order_count per month. With two orders totalling
     200, AOV must be exactly 100, not rounded or truncated."""
-    orders = pl.DataFrame({
-        "order_id": ["o1", "o2"],
-        "customer_id": ["c1", "c2"],
-        "order_purchase_timestamp": [datetime(2024, 3, 1), datetime(2024, 3, 15)],
-    })
-    payments = pl.DataFrame({
-        "order_id": ["o1", "o2"],
-        "payment_value": [80.0, 120.0],
-    })
+    orders = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2"],
+            "customer_id": ["c1", "c2"],
+            "order_purchase_timestamp": [datetime(2024, 3, 1), datetime(2024, 3, 15)],
+        }
+    )
+    payments = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2"],
+            "payment_value": [80.0, 120.0],
+        }
+    )
 
     result = generate_sales_performance(orders, payments)
 
@@ -52,19 +60,23 @@ def test_generate_sales_performance_aov_is_gmv_over_order_count():
 
 
 def test_generate_sales_performance_sorted_by_month_ascending():
-    orders = pl.DataFrame({
-        "order_id": ["o1", "o2", "o3"],
-        "customer_id": ["c1", "c2", "c3"],
-        "order_purchase_timestamp": [
-            datetime(2024, 3, 1),
-            datetime(2024, 1, 1),
-            datetime(2024, 2, 1),
-        ],
-    })
-    payments = pl.DataFrame({
-        "order_id": ["o1", "o2", "o3"],
-        "payment_value": [10.0, 20.0, 30.0],
-    })
+    orders = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2", "o3"],
+            "customer_id": ["c1", "c2", "c3"],
+            "order_purchase_timestamp": [
+                datetime(2024, 3, 1),
+                datetime(2024, 1, 1),
+                datetime(2024, 2, 1),
+            ],
+        }
+    )
+    payments = pl.DataFrame(
+        {
+            "order_id": ["o1", "o2", "o3"],
+            "payment_value": [10.0, 20.0, 30.0],
+        }
+    )
 
     result = generate_sales_performance(orders, payments)
 

@@ -31,17 +31,19 @@ def test_generate_product_performance_product_with_no_reviews_gets_null_avg_scor
 ):
     """A product in order_items but absent from reviews must produce
     null avg_review_score, not 0 - a left join preserves all products."""
-    reviews = pl.DataFrame({
-        "order_id": ["o_not_in_items"],
-        "review_score": [5],
-    })
+    reviews = pl.DataFrame(
+        {
+            "order_id": ["o_not_in_items"],
+            "review_score": [5],
+        }
+    )
 
     result = generate_product_performance(sample_order_items_df, reviews)
 
     for row in result.iter_rows(named=True):
-        assert row["avg_review_score"] is None, (
-            f"product {row['product_id']} has no reviews and must have null avg_review_score"
-        )
+        assert (
+            row["avg_review_score"] is None
+        ), f"product {row['product_id']} has no reviews and must have null avg_review_score"
 
 
 def test_generate_product_performance_sorted_by_revenue_descending(

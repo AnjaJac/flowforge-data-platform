@@ -27,9 +27,9 @@ def test_dataset_discovery_returns_all_paths_when_all_files_present(tmp_path):
 
     assert len(result) == len(REQUIRED_FILES)
     for path_str in result:
-        assert str(tmp_path) in path_str, (
-            "returned path must be within tmp_path, not a default system path"
-        )
+        assert (
+            str(tmp_path) in path_str
+        ), "returned path must be within tmp_path, not a default system path"
 
 
 def test_dataset_discovery_raises_on_missing_file(tmp_path):

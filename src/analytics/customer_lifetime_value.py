@@ -22,18 +22,16 @@ def generate_customer_lifetime_value(
     """
     order_to_customer = orders_df.select(["order_id", "customer_id"])
 
-    payments_with_customer = payments_df.join(order_to_customer, on="order_id", how="inner")
-
-    clv = (
-        payments_with_customer
-        .group_by("customer_id")
-        .agg(pl.col("payment_value").sum().alias("clv"))
+    payments_with_customer = payments_df.join(
+        order_to_customer, on="order_id", how="inner"
     )
 
-    order_counts = (
-        orders_df
-        .group_by("customer_id")
-        .agg(pl.col("order_id").n_unique().alias("order_count"))
+    clv = payments_with_customer.group_by("customer_id").agg(
+        pl.col("payment_value").sum().alias("clv")
+    )
+
+    order_counts = orders_df.group_by("customer_id").agg(
+        pl.col("order_id").n_unique().alias("order_count")
     )
 
     result = clv.join(order_counts, on="customer_id", how="inner")

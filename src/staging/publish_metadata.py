@@ -7,11 +7,11 @@ from src.utils.metadata import (
 
 
 def publish_metadata(
-        quality_results: dict[str, dict],
-        dag_id: str,
-        run_id: str,
-        execution_date: str,
-        output_directory: str,
+    quality_results: dict[str, dict],
+    dag_id: str,
+    run_id: str,
+    execution_date: str,
+    output_directory: str,
 ) -> str:
     """
     Generate and publish metadata for the Staging layer.
@@ -50,10 +50,7 @@ def publish_metadata(
         entities=entities,
     )
 
-    output_path = (
-        Path(output_directory)
-        / "metadata.json"
-    )
+    output_path = Path(output_directory) / "metadata.json"
 
     write_metadata(
         metadata,
