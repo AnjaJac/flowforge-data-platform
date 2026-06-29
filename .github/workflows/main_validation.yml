@@ -76,6 +76,10 @@ jobs:
           sleep 20
           docker exec flowforge-scheduler airflow dags trigger analytics_dag
           sleep 20
+          
+      - name: Show task states for debugging
+        run: |
+          docker exec flowforge-scheduler airflow dags list-runs analytics_dag
 
       - name: Verify final analytics outputs exist
         run: |
