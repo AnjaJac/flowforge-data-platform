@@ -126,3 +126,6 @@ foreign_keys:
 financial_reconciliation:
   tolerance: 0.01
   on_failure: warn
+
+analytics:
+  active_entity_threshold: 0.95
