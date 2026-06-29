@@ -92,7 +92,11 @@ jobs:
         run: |
           LOGICAL_DATE=$(cat /tmp/logical_date.txt)
           docker exec flowforge-scheduler airflow tasks states-for-dag-run analytics_dag "$LOGICAL_DATE"
-
+      
+      - name: Show wait_for_core sensor log for debugging
+        run: |
+          docker exec flowforge-scheduler find /opt/airflow/logs -path "*analytics_dag*wait_for_core*" -name "*.log" -exec cat {} \;
+          
       - name: Verify final analytics outputs exist
         run: |
           docker exec flowforge-scheduler test -f /opt/airflow/data/analytics/sales_performance.parquet
