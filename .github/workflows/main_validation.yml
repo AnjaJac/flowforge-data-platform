@@ -51,6 +51,16 @@ jobs:
           docker exec flowforge-scheduler airflow dags unpause staging_dag
           docker exec flowforge-scheduler airflow dags unpause core_dag
           docker exec flowforge-scheduler airflow dags unpause analytics_dag
+
+          echo "Waiting for staging_dag to register..."
+          for i in $(seq 1 20); do
+            if docker exec flowforge-scheduler airflow dags list | grep -q staging_dag; then
+              echo "staging_dag registered."
+              break
+            fi
+            sleep 5
+          done
+
           docker exec flowforge-scheduler airflow dags trigger staging_dag
           sleep 20
           docker exec flowforge-scheduler airflow dags trigger core_dag
