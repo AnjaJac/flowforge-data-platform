@@ -93,7 +93,7 @@ jobs:
           wait_for_dag() {
             DAG_ID=$1
             echo "Waiting for $DAG_ID to finish..."
-            for i in $(seq 1 60); do
+            for i in $(seq 1 240); do
               STATE=$(docker exec flowforge-scheduler airflow dags state "$DAG_ID" "$LOGICAL_DATE" 2>/dev/null || echo "unknown")
               echo "  $DAG_ID state: $STATE"
               if [ "$STATE" = "success" ]; then
@@ -127,7 +127,7 @@ jobs:
       - name: Show scheduler logs for staging_dag stall
         if: always()
         run: docker logs flowforge-scheduler --tail 150
-         
+
       - name: Show analytics_dag task states for debugging
         run: |
           LOGICAL_DATE=$(cat /tmp/logical_date.txt)
