@@ -40,6 +40,11 @@ jobs:
           chmod -R 777 airflow/logs
           chmod 666 airflow/config/simple_auth_manager_passwords.json
 
+      - name: Prepare data directories with permissive permissions
+        run: |
+          mkdir -p data/raw data/staging data/core data/analytics
+          chmod -R 777 data
+
       - name: Build and launch full stack
         run: docker compose up -d --build
 
@@ -126,7 +131,7 @@ jobs:
         if: always()
         run: |
           LOGICAL_DATE=$(cat /tmp/logical_date.txt)
-          docker exec flowforge-scheduler airflow tasks states-for-dag-run staging_dag "$LOGICAL_DATE"
+          docker exec flowforge-scheduler airflow tasks states-for-dag-run staging_dag "$LOGICAL_DATE" || true
 
       - name: Show scheduler logs for staging_dag stall
         if: always()
