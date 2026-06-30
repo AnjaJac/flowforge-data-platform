@@ -38,5 +38,7 @@ build/
 *.egg-info/
 
 *.parquet
-*.csv
 data/**/*.json
+
+# Not used by the pipeline (not in dataset_discovery's required files); too large to commit
+data/source/geolocation.csv
