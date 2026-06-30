@@ -70,8 +70,9 @@ jobs:
           echo "--- webserver logs ---"
           docker logs flowforge-webserver --tail 50
 
-      - name: Trigger full pipeline (staging -> core -> analytics)
+      - name: Trigger full pipeline (ingestion -> staging -> core -> analytics)
         run: |
+          docker exec flowforge-scheduler airflow dags unpause ingestion_dag
           docker exec flowforge-scheduler airflow dags unpause staging_dag
           docker exec flowforge-scheduler airflow dags unpause core_dag
           docker exec flowforge-scheduler airflow dags unpause analytics_dag
@@ -79,7 +80,7 @@ jobs:
           echo "Waiting for all DAGs to register..."
           for i in $(seq 1 20); do
             REGISTERED=$(docker exec flowforge-scheduler airflow dags list)
-            if echo "$REGISTERED" | grep -q staging_dag && echo "$REGISTERED" | grep -q core_dag && echo "$REGISTERED" | grep -q analytics_dag; then
+            if echo "$REGISTERED" | grep -q ingestion_dag && echo "$REGISTERED" | grep -q staging_dag && echo "$REGISTERED" | grep -q core_dag && echo "$REGISTERED" | grep -q analytics_dag; then
               echo "All DAGs registered."
               break
             fi
@@ -109,6 +110,9 @@ jobs:
             exit 1
           }
 
+          docker exec flowforge-scheduler airflow dags trigger ingestion_dag --logical-date "$LOGICAL_DATE"
+          wait_for_dag ingestion_dag
+
           docker exec flowforge-scheduler airflow dags trigger staging_dag --logical-date "$LOGICAL_DATE"
           wait_for_dag staging_dag
 
@@ -128,12 +132,20 @@ jobs:
         if: always()
         run: docker logs flowforge-scheduler --tail 150
 
-      - name: Show analytics_dag task states for debugging
+      - name: Show ingestion_dag task states for debugging
+        if: always()
         run: |
           LOGICAL_DATE=$(cat /tmp/logical_date.txt)
-          docker exec flowforge-scheduler airflow tasks states-for-dag-run analytics_dag "$LOGICAL_DATE"
+          docker exec flowforge-scheduler airflow tasks states-for-dag-run ingestion_dag "$LOGICAL_DATE" || true
 
-      - name: Show scheduler logs around wait_for_core failure
+      - name: Show analytics_dag task states for debugging
+        if: always()
+        run: |
+          LOGICAL_DATE=$(cat /tmp/logical_date.txt)
+          docker exec flowforge-scheduler airflow tasks states-for-dag-run analytics_dag "$LOGICAL_DATE" || true
+
+      - name: Show scheduler logs around failures
+        if: always()
         run: docker logs flowforge-scheduler --tail 100
 
 

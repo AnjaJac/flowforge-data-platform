@@ -1,8 +1,8 @@
 from airflow import DAG
 import polars as pl
 from pathlib import Path
-from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
+from airflow.sensors.external_task import ExternalTaskSensor
 from datetime import datetime, timedelta
 from airflow.utils.task_group import TaskGroup
 from src.staging.customers import clean_customers
@@ -94,8 +94,12 @@ with DAG(
     },
 ) as dag:
 
-    start = EmptyOperator(
-        task_id="start"
+    wait_for_ingestion = ExternalTaskSensor(
+        task_id="wait_for_ingestion",
+        external_dag_id="ingestion_dag",
+        external_task_id="publish_metadata_task",
+        allowed_states=["success"],
+        poke_interval=30,
     )
 
     schema_validation_task = PythonOperator(
@@ -148,4 +152,4 @@ with DAG(
             python_callable=run_order_items_processing,
         )
     
-    start >> schema_validation_task >> customer_processing >> seller_processing >> payment_processing >> product_processing >> review_processing >> order_processing >> quality_check_task >> publish_metadata
+    wait_for_ingestion >> schema_validation_task >> customer_processing >> seller_processing >> payment_processing >> product_processing >> review_processing >> order_processing >> quality_check_task >> publish_metadata
